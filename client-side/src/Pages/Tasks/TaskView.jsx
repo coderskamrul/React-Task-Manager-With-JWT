@@ -6,7 +6,7 @@ const TaskView = () => {
     const [tasks, setTasks] = React.useState([]);
     //i want to show all the tasks here using axios using 'http://localhost:5000/upload-image'
     useEffect(() => {
-        axios.get('http://localhost:5000/upload-image')
+        axios.get('http://localhost:5000/upload-image', {withCredentials: true})
             .then(res => {
                 console.log(res.data);
                 setTasks(res.data.result);

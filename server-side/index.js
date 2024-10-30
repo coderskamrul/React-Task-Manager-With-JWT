@@ -59,6 +59,32 @@ const client = new MongoClient(uri, {
     }
 });
 
+const logger = (req, res, next) => {
+    console.log('Logging route:', req.hostname, req.originalUrl);
+    next();
+};
+
+const verifyToken = async (req, res, next) => {
+    const token = req.cookies?.token;
+    console.log('ok tt ' , token);
+    if (!token) {
+        return res.status(401).send('Access Denied');
+    }
+    try {
+        jwt.verify(token, process.env.JWT_SECRET_TOKEN, function(err, decoded) {
+            if (err) {
+                return res.status(401).send('Invalid Token');
+            }
+            req.user = decoded;
+            next();
+            console.log(req.user);
+          });
+    } catch (error) {
+        res.status(400).send('Invalid Token');
+    }
+};
+
+
 async function run() {
     try {
         // Connect the client to the MongoDB server
@@ -93,8 +119,11 @@ async function run() {
         });
 
         // GET Tasks route to fetch all user data
-        app.get('/upload-image', async (req, res) => {
+        app.get('/upload-image', logger, verifyToken, async (req, res) => {
             try {
+                //Get JWT Valid Token To Verify this "req.user" is valid or not in Here
+                console.log('valid user ' , req.user);
+
                 const result = await taskCollection.find({}).toArray(); // Fetch all tasks
                 res.status(200).send({ message: 'Get all task successfully', result });
                 // res.send(users);
