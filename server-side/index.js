@@ -1,4 +1,7 @@
 const express = require('express');
+const multer = require("multer");
+const path = require("path");
+const fs = require('fs');
 const cors = require('cors');
 const app = express();
 require('dotenv').config();
@@ -11,10 +14,33 @@ const PORT = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 
+// Multer configuration
+// Ensure the images directory exists
+const imagesDir = path.join(__dirname, '../client-side/public/images');
+if (!fs.existsSync(imagesDir)) {
+    fs.mkdirSync(imagesDir, { recursive: true });
+}
+
+// Multer setup
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, imagesDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now();
+        cb(null, uniqueSuffix + '-' + file.originalname);
+    },
+});
+const upload = multer({ storage: storage });
+
+
 // Routes
 app.get('/', (req, res) => {
     res.send('task manager server is running...');  // Responding to root route
 });
+
+
+
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -31,22 +57,57 @@ async function run() {
         console.log("Successfully connected to MongoDB!");
 
         // Select the database and collection
-        const db = client.db("userDB");
-        const usersCollection = db.collection("users");
+        const db = client.db("TaskManagerDB");
+        const taskCollection = db.collection("Tasks");
 
+        // POST Multer route to add Image data start
+        app.post("/upload-image", upload.single("image"), async (req, res) => {
+            try {
+                if (!req.file) {
+                    return res.status(400).send({ message: 'No file uploaded' });
+                }
+                const newTask = {
+                    title: req.body.title,
+                    description: req.body.description,
+                    image: req.file.filename,
+                    status: 'Pending',
+                    users: [],
+                    created_at: new Date()
+                };
+                const result = await taskCollection.insertOne(newTask);
+                // res.send(result);
+                res.status(200).send({ message: 'File uploaded successfully', result });
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({ message: 'Internal Server Error' });
+            }
+        });
+
+        // GET Tasks route to fetch all user data
+        app.get('/upload-image', async (req, res) => {
+            try {
+                const result = await taskCollection.find({}).toArray(); // Fetch all tasks
+                res.status(200).send({ message: 'Get all task successfully', result });
+                // res.send(users);
+            } catch (error) {
+                console.error("Error fetching users", error);
+                res.status(500).send({ error: "Failed to fetch users" });
+            }
+        });
         // POST route to add user data
         // app.post('/users', async (req, res) => {
         //     const newUser = req.body;
         //     console.log(newUser);
-        //     const result = await usersCollection.insertOne(newUser);
+        //     const result = await taskCollection.insertOne(newUser);
         //     res.send(result);
         // });
 
-        // // GET route to fetch all user data
-        // app.get('/users', async (req, res) => {
+        // GET Tasks route to fetch all user data
+        // app.get('/upload-image', async (req, res) => {
         //     try {
-        //         const users = await usersCollection.find({}).toArray(); // Fetch all users
-        //         res.send(users);
+        //         const result = await taskCollection.find({}).toArray(); // Fetch all tasks
+        //         res.status(200).send({ message: 'Get all task successfully', result });
+        //         // res.send(users);
         //     } catch (error) {
         //         console.error("Error fetching users", error);
         //         res.status(500).send({ error: "Failed to fetch users" });
@@ -56,7 +117,7 @@ async function run() {
         // app.get('/update/:id', async (req, res) => {
         //     const id = req.params.id;
         //     const query = { _id: new ObjectId(id) };
-        //     const result = await usersCollection.findOne(query);
+        //     const result = await taskCollection.findOne(query);
         //     res.send(result);
 
         // })
@@ -72,7 +133,7 @@ async function run() {
         //             email: usersUp.email
         //         },
         //     };
-        //     const result = await usersCollection.updateOne(query, updatedUser, options);
+        //     const result = await taskCollection.updateOne(query, updatedUser, options);
 
         //     res.send(result);
 
@@ -81,7 +142,7 @@ async function run() {
         // app.delete('/users/:id', async (req, res) => {
         //     const id = req.params.id;
         //     const query = { _id: new ObjectId(id) };
-        //     const result = await usersCollection.deleteOne(query);
+        //     const result = await taskCollection.deleteOne(query);
         //     res.send(result);
 
         // })

@@ -5,6 +5,7 @@ import LogIn from "../Pages/LogIn/LogIn";
 import SignUp from "../Pages/SignUp/SignUp";
 import TaskAdd from "../Pages/Tasks/TaskAdd";
 import TaskView from "../Pages/Tasks/TaskView";
+import PrivateRouter from "./PrivateRouter";
 
 
 
@@ -31,7 +32,7 @@ const router = createBrowserRouter([
         },
         {
             path: '/tasks',
-            element: <TaskView></TaskView>
+            element: <PrivateRouter> <TaskView></TaskView> </PrivateRouter>
         },
       ]
     },
