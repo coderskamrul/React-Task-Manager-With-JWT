@@ -1,5 +1,6 @@
 import React, { useContext } from 'react'
 import { AuthContext } from '../../Provider/AuthProvider';
+import axios from 'axios';
 
 const LogIn = () => {
 
@@ -12,12 +13,23 @@ const LogIn = () => {
         console.log(email  + ' ' + password);
         signIn(email, password)
         .then((userCredential) => {
+            const newUser = { email };
+            //post request to server with axios 
+            axios.post('http://localhost:5000/jwt', newUser, {withCredentials: true})
+            .then((response) => {
+                console.log(response.data);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
             console.log(userCredential);
         })
         .catch((error) => {
             console.log(error);
         });
     }
+
 
     return (
         <div className="hero bg-base-200 min-h-screen">

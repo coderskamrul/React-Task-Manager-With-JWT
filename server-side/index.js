@@ -3,7 +3,9 @@ const multer = require("multer");
 const path = require("path");
 const fs = require('fs');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const app = express();
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
@@ -11,8 +13,15 @@ const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASSWORD}
 const PORT = process.env.PORT || 8000;
 
 // Middleware
-app.use(cors());
+app.use(cors(
+    {
+        origin: ['http://localhost:5173'],
+        credentials: true
+    }
+));
 app.use(express.json());
+app.use(cookieParser());
+
 
 // Multer configuration
 // Ensure the images directory exists
@@ -94,13 +103,19 @@ async function run() {
                 res.status(500).send({ error: "Failed to fetch users" });
             }
         });
-        // POST route to add user data
-        // app.post('/users', async (req, res) => {
-        //     const newUser = req.body;
-        //     console.log(newUser);
-        //     const result = await taskCollection.insertOne(newUser);
-        //     res.send(result);
-        // });
+
+        //POST route with JWT token
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.JWT_SECRET_TOKEN, { expiresIn: '1h' });
+            console.log(token);
+            res
+            .cookie('token', token, { 
+                httpOnly: true,
+                secure: false,
+            })
+            .send({ message: 'Token generated successfully' });
+        });
 
         // GET Tasks route to fetch all user data
         // app.get('/upload-image', async (req, res) => {
