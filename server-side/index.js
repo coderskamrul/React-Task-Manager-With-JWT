@@ -4,10 +4,12 @@ const path = require("path");
 const fs = require('fs');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const app = express();
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { start } = require('repl');
 
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASSWORD}@cluster0.bvll5ro.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 const PORT = process.env.PORT || 8000;
@@ -49,7 +51,9 @@ app.get('/', (req, res) => {
 });
 
 
-
+const generateUniqueId = () => {
+    return Math.floor(10000000 + Math.random() * 90000000).toString();
+  };
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -59,11 +63,13 @@ const client = new MongoClient(uri, {
     }
 });
 
-const logger = (req, res, next) => {
+//Custom Middleware for logging
+const logger = async (req, res, next) => {
     console.log('Logging route:', req.hostname, req.originalUrl);
     next();
 };
 
+//Custom Middleware for verifying JWT token
 const verifyToken = async (req, res, next) => {
     const token = req.cookies?.token;
     console.log('ok tt ' , token);
@@ -94,6 +100,37 @@ async function run() {
         // Select the database and collection
         const db = client.db("TaskManagerDB");
         const taskCollection = db.collection("Tasks");
+        const projectCollection = db.collection("Projects");
+
+        // POST Multer route to add Project data start
+        app.post("/projects", upload.single("image"), async (req, res) => {
+            try {
+                if (!req.file) {
+                    return res.status(400).send({ message: 'No file uploaded' });
+                }
+                const newProject = {
+                    projectId: generateUniqueId(),
+                    title: req.body.title,
+                    description: req.body.description,
+                    image: req.file.filename,
+                    status: 'Pending',
+                    startDate: req.body.startDate,
+                    endDate: req.body.endDate,
+                    priority: req.body.priority,
+                    assignedUsers: req.body.assignedUsers.split(','),
+                    tasks: [],
+                    created_at: new Date()
+                };
+                console.log(req.body);
+                 const result = await projectCollection.insertOne(newProject);
+                // res.send(result);
+                 res.status(200).send({ message: 'Project added successfully', result });
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({ message: 'Internal Server Error' });
+            }
+        });
+        // POST Multer route to add Project data end
 
         // POST Multer route to add Image data start
         app.post("/upload-image", upload.single("image"), async (req, res) => {
@@ -118,6 +155,20 @@ async function run() {
             }
         });
 
+        // GET all Projects route to fetch all project data
+        app.get('/projects', logger, verifyToken, async (req, res) => {
+            try {
+                //Get JWT Valid Token To Verify this "req.user" is valid or not in Here
+                // console.log('valid user ' , req.user);
+
+                const result = await projectCollection.find({}).toArray(); // Fetch all tasks
+                res.status(200).send({ message: 'Get all task successfully', result });
+                // res.send(users);
+            } catch (error) {
+                console.error("Error fetching users", error);
+                res.status(500).send({ error: "Failed to fetch users" });
+            }
+        });
         // GET Tasks route to fetch all user data
         app.get('/upload-image', logger, verifyToken, async (req, res) => {
             try {
@@ -136,7 +187,7 @@ async function run() {
         //POST route with JWT token
         app.post('/jwt', async (req, res) => {
             const user = req.body;
-            const token = jwt.sign(user, process.env.JWT_SECRET_TOKEN, { expiresIn: '1h' });
+            const token = jwt.sign(user, process.env.JWT_SECRET_TOKEN, { expiresIn: '7d' });
             console.log(token);
             res
             .cookie('token', token, { 
