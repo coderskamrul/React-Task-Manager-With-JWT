@@ -2,18 +2,21 @@ import React, { useContext } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "../../../Components/Modal";
 import { AuthContext } from "../../../Provider/AuthProvider";
+import useAuth from "../../../Hooks/useAuth";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 // import {useFormHandler} from "../../../Hooks/useFormHandler";
 
 const AddTaskForm = () => {
 
   const { currentProject } = useContext(AuthContext);
+  const {user} = useAuth();
+  const axiosSecure = useAxiosSecure();
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm();
-  console.log(currentProject.projectId);
   const tagsOptions = ["Bug Fix", "New Feature", "User Issue"];
   const usersOptions = ["User 1", "User 2", "User 3", "User 4"];
 
@@ -26,8 +29,19 @@ const AddTaskForm = () => {
     // onSubmit(data);
     const taskData = {
         ...data,
-        projectId: currentProject.projectId,
-        };
+        projectId: currentProject?.projectId,
+        createdBy: user?.email,
+    };
+
+    axiosSecure.post("/tasks", taskData)
+    .then(res => {
+        console.log(res.data);
+    })
+    .catch(err => {
+        console.error(err);
+    });
+
+
     console.log(taskData);
     reset(); // Reset form after successful submission
   };
@@ -94,6 +108,23 @@ const AddTaskForm = () => {
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
+            </select>
+          </div>
+
+          {/* Progress Field */}
+          <div className="flex flex-col">
+            <label htmlFor="priority" className="mb-1 font-medium text-gray-700">
+              Progress
+            </label>
+            <select
+              id="priority"
+              {...register("progress")}
+              className="px-4 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300"
+            >
+              <option value="backlog">Backlog</option>
+              <option value="todo">ToDo</option>
+              <option value="inProgress">In Progress</option>
+              <option value="completed">Completed</option>
             </select>
           </div>
 

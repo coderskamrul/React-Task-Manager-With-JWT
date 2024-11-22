@@ -197,6 +197,29 @@ async function run() {
             .send({ message: 'Token generated successfully' });
         });
 
+        //Post Tasks Route to Store Data in Database
+        app.post('/tasks', async (req, res) => {
+            try {
+                const newTask = {
+                    title: req.body.title,
+                    description: req.body.description,
+                    priority: req.body.priority,
+                    progress: req.body.progress,
+                    tags: req.body.tags,
+                    assignedUsers: req.body.assignedUsers,
+                    date: req.body.date,
+                    projectId: req.body.projectId,
+                    createdBy: req.body.createdBy,
+                    created_at: new Date()
+                };
+                const result = await taskCollection.insertOne(newTask);
+                res.status(200).send({ message: 'Task added successfully', result });
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({ message: 'Internal Server Error' });
+            }
+        });
+
         // GET Tasks route to fetch all user data
         // app.get('/upload-image', async (req, res) => {
         //     try {

@@ -1,16 +1,19 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import AddTaskForm from "./AddTaskForm";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../../../Provider/AuthProvider";
+import useAuth from "../../../Hooks/useAuth";
 const TaskBoard = ( ) => {
+  
+  const {projects, setCurrentProject} = useAuth();
   const { id } = useParams();
-
-  const {projects, setCurrentProject} = useContext(AuthContext);
-  const currentProject = projects.find((project) => project.projectId === id);
-  console.log(projects);
-  console.log(currentProject);
-  console.log(id);
-  setCurrentProject(currentProject);
+  
+  useEffect(() => {
+    if (id) {
+      const currentProject = projects.find((project) => project.projectId === id);
+      setCurrentProject(currentProject);
+    }
+  }, [id, projects, setCurrentProject]);
   
   const tasks = {
     todo: [
@@ -24,7 +27,7 @@ const TaskBoard = ( ) => {
         assignees: ["AJ", "JS", "CA"],
       },
       {
-        id: 1,
+        id: 2,
         title: "Test task",
         priority: "High",
         description: "Task manager YouTube tutorial",
@@ -33,7 +36,7 @@ const TaskBoard = ( ) => {
         assignees: ["AJ", "JS", "CA"],
       },
       {
-        id: 1,
+        id: 3,
         title: "Test task",
         priority: "High",
         description: "Task manager YouTube tutorial",
@@ -42,7 +45,7 @@ const TaskBoard = ( ) => {
         assignees: ["AJ", "JS", "CA"],
       },
       {
-        id: 1,
+        id: 4,
         title: "Test task",
         priority: "High",
         description: "Task manager YouTube tutorial",
