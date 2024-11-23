@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { AuthContext } from '../../Provider/AuthProvider';
-
+import axios from 'axios';
+import Swal from 'sweetalert2';
 const SignUp = () => {
 
     const { createUser } = useContext(AuthContext);
@@ -8,6 +9,7 @@ const SignUp = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const form = e.target;
+        const name = form.name.value;
         const email = form.email.value;
         const password = form.password.value;
         console.log(email, password);
@@ -15,6 +17,28 @@ const SignUp = () => {
         createUser(email, password)
         .then((userCredential) => {
             console.log(userCredential);
+            const users = {
+                name: name,
+                email: email,
+                password: password,
+                uid: userCredential.user.uid
+            }
+            axios.post('http://localhost:5000/users', users)
+            .then((res) => {
+                console.log( res.data.result );
+                if( res.data.result.acknowledged ) {
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Your Account is created successfully",
+                        showConfirmButton: false,
+                        timer: 1500
+                      });
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
         })
         .catch((error) => {
             console.log(error);
@@ -32,7 +56,7 @@ const SignUp = () => {
                     <label className="label">
                         <span className="label-text">Name</span>
                     </label>
-                    <input type="name" placeholder="Name" className="input input-bordered" required />
+                    <input type="name" name='name' placeholder="Name" className="input input-bordered" required />
                 </div>
                 <div className="form-control">
                     <label className="label">

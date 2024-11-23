@@ -3,10 +3,13 @@ import Project from './Project'
 import AddProjectForm from './AddProjectForm'
 import axios from 'axios';
 import { AuthContext } from '../../../Provider/AuthProvider';
+import useProjects from '../../../Hooks/useProjects';
 
 const Projects = () => {
 
-    const {projects} = useContext(AuthContext);
+    // const {projects} = useContext(AuthContext);
+    const [ projects ] = useProjects();
+    console.log(projects);
     // useEffect(() => {
     //     axios.get('http://localhost:5000/projects', {withCredentials: true})
     //         .then(res => {

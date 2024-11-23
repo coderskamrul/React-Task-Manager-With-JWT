@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Modal from '../../../Components/Modal';
 import axios from 'axios';
+import MultiSelectDropdown from '../../../Components/MultiSelectDropdown';
+import useUsers from '../../../Hooks/useUsers';
 
 const AddProjectForm = () => {
     // {
@@ -12,7 +14,9 @@ const AddProjectForm = () => {
     //     "status": "Active",
     //     "tasks": ["ObjectId('task1')", "ObjectId('task2')"]
     //   }
-
+    const [selectedUsers, setSelectedUsers] = useState([]);
+    const [usersOptions, setUsersOptions] = useState([]);
+    const [users] = useUsers();
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -23,7 +27,19 @@ const AddProjectForm = () => {
     });
 
     const tagsOptions = ["Bug Fix", "New Feature", "User Issue"];
-    const usersOptions = ["User 1", "User 2", "User 3", "User 4"];
+    // const usersOptions = ["User 1", "User 2", "User 3", "User 4"];
+    useEffect(() => {
+        if (users.length > 0) {
+            const getUsers = users.map((user) => {
+                return {
+                    key: user.email,
+                    value: user.name,
+                };
+            });
+            setUsersOptions(getUsers);
+        }
+    }, [users]);
+    // console.log(users);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -54,7 +70,7 @@ const AddProjectForm = () => {
         formProjectData.append('title', formData.title);
         formProjectData.append('description', formData.description);
         formProjectData.append('priority', formData.priority);
-        formProjectData.append('assignedUsers', formData.assignedUsers);
+        formProjectData.append('assignedUsers', selectedUsers);
         formProjectData.append('startDate', formData.startDate);
         formProjectData.append('endDate', formData.endDate);
         formProjectData.append('image', file);
@@ -129,25 +145,18 @@ const AddProjectForm = () => {
                             <option value="high">High</option>
                         </select>
                     </div>
+                </div>
 
-                    {/* Assigned Users Field */}
-                    <div className="flex flex-col flex-1">
-                        <label htmlFor="assignedUsers" className="mb-1 font-medium text-gray-700">Assign Users</label>
-                        <select
-                            name="assignedUsers"
-                            id="assignedUsers"
-                            value={formData.assignedUsers}
-                            onChange={handleUsersChange}
-                            multiple
-                            className="px-4 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300"
-                        >
-                            {usersOptions.map((user, index) => (
-                                <option key={index} value={user}>
-                                    {user}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                {/* Multi-Select for Users */}
+                <div className="flex flex-col">
+                    <label htmlFor="users" className="mb-1 font-medium text-gray-700">
+                        Assign Users
+                    </label>
+                    <MultiSelectDropdown
+                        options={usersOptions}
+                        selectedItems={selectedUsers}
+                        onChange={setSelectedUsers}
+                    />
                 </div>
 
                 {/* Start Date and End Date Fields in One Row */}

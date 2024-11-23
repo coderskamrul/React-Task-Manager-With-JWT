@@ -50,16 +50,15 @@ const router = createBrowserRouter([
         },
         {
           path: 'tasks',
-          element: <div className="p-8"><TaskBoard /></div>
+          element: <div className="p-2"><TaskBoard /></div>
         },
         {
           path: 'projects',
           element: <Projects />,
-          loader: () => fetch('http://localhost:5000/projects')
         },
         {
           path: 'projects/tasks/:id',
-          element: <div className="p-8"> <TaskBoard /> </div>
+          element: <div className="p-2"> <TaskBoard /> </div>
         },
       ]
     }

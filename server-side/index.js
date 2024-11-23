@@ -72,7 +72,7 @@ const logger = async (req, res, next) => {
 //Custom Middleware for verifying JWT token
 const verifyToken = async (req, res, next) => {
     const token = req.cookies?.token;
-    console.log('ok tt ' , token);
+    // console.log('ok tt ' , token);
     if (!token) {
         return res.status(401).send('Access Denied');
     }
@@ -101,6 +101,7 @@ async function run() {
         const db = client.db("TaskManagerDB");
         const taskCollection = db.collection("Tasks");
         const projectCollection = db.collection("Projects");
+        const usersCollection = db.collection("Users");
 
         // POST Multer route to add Project data start
         app.post("/projects", upload.single("image"), async (req, res) => {
@@ -156,13 +157,22 @@ async function run() {
         });
 
         // GET all Projects route to fetch all project data
-        app.get('/projects', logger, verifyToken, async (req, res) => {
+        app.get('/dashboard/projects',logger,  async (req, res) => {
             try {
                 //Get JWT Valid Token To Verify this "req.user" is valid or not in Here
-                // console.log('valid user ' , req.user);
-
-                const result = await projectCollection.find({}).toArray(); // Fetch all tasks
-                res.status(200).send({ message: 'Get all task successfully', result });
+                console.log('ok ase');
+                console.log(req.user);
+                const email = req.query.email;
+                const role = req.query.role;
+                //i want to get all projects where assignedUsers array contains the email or role is admin and this role filed is in the user collection not project collection
+                // const result = await projectCollection.find({ $or: [{ assignedUsers: email }, { role: 'admin' }] }).toArray(); // Fetch all projects
+                if (role === 'admin') {
+                    const result = await projectCollection.find({}).toArray(); // Fetch all projects
+                    res.status(200).send({ message: 'Get all projects successfully', result });
+                } else {
+                    const result = await projectCollection.find({ assignedUsers: email }).toArray(); // Fetch all projects
+                    res.status(200).send({ message: 'Get all projects successfully base on email', result });
+                }
                 // res.send(users);
             } catch (error) {
                 console.error("Error fetching users", error);
@@ -217,6 +227,44 @@ async function run() {
             } catch (error) {
                 console.error(error);
                 res.status(500).send({ message: 'Internal Server Error' });
+            }
+        });
+
+        //Get the all tasks data from database
+        app.get('/dashboard/projects/tasks', async (req, res) => {
+            try {
+                const result = await taskCollection.find({}).toArray();
+                res.status(200).send({ message: 'Get all tasks successfully', result });
+            } catch (error) {
+                console.error("Error fetching tasks", error);
+                res.status(500).send({ error: "Failed to fetch tasks" });
+            }
+        });
+        app.post('/users', async (req, res) => {
+            try {
+                const newUser = {
+                    name: req.body.name,
+                    email: req.body.email,
+                    password: req.body.password,
+                    uid: req.body.uid,
+                    created_at: new Date()
+                };
+                const result = await usersCollection.insertOne(newUser);
+                res.status(200).send({ message: 'User added successfully', result });
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({ message: 'Internal Server Error' });
+            }
+        });
+
+        //Get the all users data
+        app.get('/users', async (req, res) => {
+            try {
+                const result = await usersCollection.find({}).toArray();
+                res.status(200).send({ message: 'Get all users successfully', result });
+            } catch (error) {
+                console.error("Error fetching users", error);
+                res.status(500).send({ error: "Failed to fetch users" });
             }
         });
 

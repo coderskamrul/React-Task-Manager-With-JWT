@@ -14,16 +14,16 @@ const AuthProvider = ({ children }) => {
     const [currentProject, setCurrentProject] = useState(null);
 
 
-    useEffect(() => {
-        axios.get('http://localhost:5000/projects', {withCredentials: true})
-            .then(res => {
-                setProjects(res.data.result);
-            })
-            .catch(err => {
-                console.error(err);
-            }
-        );
-    },[])
+    // useEffect(() => {
+    //     axios.get('http://localhost:5000/projects', {withCredentials: true})
+    //         .then(res => {
+    //             setProjects(res.data.result);
+    //         })
+    //         .catch(err => {
+    //             console.error(err);
+    //         }
+    //     );
+    // },[])
 
     const createUser = (email, password) => {
         setLoading(true);
