@@ -185,29 +185,28 @@ import { useParams } from "react-router-dom";
 import { AuthContext } from "../../../Provider/AuthProvider";
 import useTaskManage from "../../../Hooks/useTaskManage";
 import useProjects from "../../../Hooks/useProjects";
+import Swal from "sweetalert2";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 
 const TaskBoard = () => {
   const { id } = useParams();
   const [projects, isProjectLoading] = useProjects();
   const [tasks, isTaskLoading] = useTaskManage();
   const { setCurrentProject } = useContext(AuthContext);
-
-  const [columns, setColumns] = useState([
-    { id: "backlog", title: "Backlog", tasks: [] },
-    { id: "todo", title: "To Do", tasks: [] },
-    { id: "inProgress", title: "In Progress", tasks: [] },
-    { id: "completed", title: "Completed", tasks: [] },
-  ]);
-
+  const axiosSecure = useAxiosSecure();
   const getTask = !isTaskLoading ? tasks : null;
   const getProjects = !isProjectLoading
-    ? projects.find((project) => project.projectId === id)
-    : "";
+  ? projects.find((project) => project.projectId === id)
+  : "";
+  //TODO: Refactor columns to be dynamic
+  const [columns, setColumns] = useState(getProjects?.column);
 
   // Set the current project context when projects are loaded
   useEffect(() => {
     if (getProjects) {
       setCurrentProject(getProjects);
+      // console.log(getProjects.column);
+      // setColumns(getProjects.column);
     }
   }, [getProjects, setCurrentProject]);
 
@@ -248,6 +247,51 @@ const TaskBoard = () => {
     setColumns((prevColumns) => [...prevColumns, newColumn]);
   };
 
+  const handleAddColumn = async () => {
+    
+    const { value: title } = await Swal.fire({
+      title: "Input title column",
+      input: "text",
+      inputLabel: "Your title column",
+      inputPlaceholder: "Enter your title column"
+    });
+    if (title) {
+
+      // Swal.fire(`Entered title: ${title}`);
+
+      // title id should be title in lowercase and replace space with '-'
+      const titleId = title.toLowerCase().replace(/\s+/g, "_");
+      const newColumn = {
+        id: titleId,
+        title,
+        tasks: []
+      };
+
+      axiosSecure.put(`/projects/${id}`, newColumn)
+        .then(res => {
+          console.log(res.data);
+          if (res.data.result.acknowledged) {
+            Swal.fire({
+              position: "top-end",
+              icon: "success",
+              title: "Column is created successfully",
+              showConfirmButton: false,
+              timer: 1500
+            });
+          }
+        })
+        .catch(err => {
+          console.error(err);
+        }
+      );
+
+
+
+
+    }
+
+  };
+
   const TaskCard = ({ task }) => (
     <div className="bg-white p-4 rounded-lg shadow-md mb-4">
       <div className="flex justify-between items-center mb-2">
@@ -279,6 +323,26 @@ const TaskBoard = () => {
 
     <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold capitalize">Tasks</h2>
+          <button
+            type="button"
+            className="flex flex-row-reverse items-center gap-1 bg-blue-600 text-white rounded-md px-3 py-2"
+          >
+            <span className="" onClick={handleAddColumn}>Create Column</span>
+            {/* <button >Create Task</button> */}
+
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              strokeWidth="0"
+              viewBox="0 0 512 512"
+              className="text-lg"
+              height="1em"
+              width="1em"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M416 277.333H277.333V416h-42.666V277.333H96v-42.666h138.667V96h42.666v138.667H416v42.666z" />
+            </svg>
+          </button>
           <button
             type="button"
             className="flex flex-row-reverse items-center gap-1 bg-blue-600 text-white rounded-md px-3 py-2"

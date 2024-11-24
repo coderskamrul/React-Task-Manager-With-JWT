@@ -7,7 +7,7 @@ const PrivateRouter = ({ children }) => {
     const location = useLocation();
 
     if(loading) {
-        return <progress className="progress w-56 m-auto text-center"></progress>
+        return<div className='flex items-center h-screen'> <progress className="progress w-56 ter m-auto text-center"></progress> </div>
     }
 
     if(user?.email){

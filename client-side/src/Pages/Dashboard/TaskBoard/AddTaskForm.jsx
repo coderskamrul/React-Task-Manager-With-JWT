@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { get, useForm } from "react-hook-form";
 import Modal from "../../../Components/Modal";
 import { AuthContext } from "../../../Provider/AuthProvider";
 import useAuth from "../../../Hooks/useAuth";
@@ -21,18 +21,20 @@ const AddTaskForm = () => {
     const axiosSecure = useAxiosSecure();
     const [users] = useUsers();
     const [ tasks, isTaskLoading, refetch ] = useTaskManage();
-    // console.log(selectedUsers);
+    // console.dir(currentProject);
+    const getColumn = currentProject?.column;
+    const getTags = currentProject?.tags;
     const {
         register,
         handleSubmit,
         reset,
         formState: { errors },
     } = useForm();
-    const tagOptions = [
-        { key: 'bugFix', value: "Bug Fix" },
-        { key: 'newFeature', value: "New Feature" },
-        { key: 'userIssue', value: "User Issue" },
-      ];
+
+    //TODO: Add tags to the Project Schema and fetch them here dynamic from the database and project wise
+    const tagOptions = getTags && getTags?.map((tag) => { return { key: tag.key, value: tag.value }; });
+    console.log(tagOptions);
+
     // const usersOptions = ["User 1", "User 2", "User 3", "User 4"];
     useEffect(() => {
         if (users.length > 0) {
@@ -162,10 +164,19 @@ const AddTaskForm = () => {
                             {...register("progress")}
                             className="px-4 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300"
                         >
-                            <option value="backlog">Backlog</option>
+                            {
+                                getColumn && getColumn.map((column) => {
+                                    return (
+                                        <option key={column.id} value={column.id}>
+                                            {column.title}
+                                        </option>
+                                    );
+                                })
+                            }
+                            {/* <option value="backlog">Backlog</option>
                             <option value="todo">ToDo</option>
                             <option value="inProgress">In Progress</option>
-                            <option value="completed">Completed</option>
+                            <option value="completed">Completed</option> */}
                         </select>
                     </div>
 

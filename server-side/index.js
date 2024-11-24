@@ -120,6 +120,8 @@ async function run() {
                     priority: req.body.priority,
                     assignedUsers: req.body.assignedUsers.split(','),
                     tasks: [],
+                    column: [],
+                    tags: [],
                     created_at: new Date()
                 };
                 console.log(req.body);
@@ -131,6 +133,39 @@ async function run() {
                 res.status(500).send({ message: 'Internal Server Error' });
             }
         });
+
+        //PUT route to update project 'column' field with new column data
+        app.put('/projects/:id', logger, async (req, res) => {
+            try {
+                const id = req.params.id;
+                const newColumn = req.body; // Expecting a single object in the request body
+        
+                // Validate request body
+                if (!newColumn || typeof newColumn !== 'object') {
+                    return res.status(400).send({ message: 'Request body must be an object' });
+                }
+        
+                const query = { projectId: id }; // Query to match the project by ID
+                const updatedProject = {
+                    $push: {
+                        column: newColumn, // Push the single object into the column array
+                    },
+                };
+        
+                // Perform the database update
+                const result = await projectCollection.updateOne(query, updatedProject);
+        
+                if (result.matchedCount === 0) {
+                    return res.status(404).send({ message: 'Project not found' });
+                }
+        
+                res.status(200).send({ message: 'Column added successfully', result });
+            } catch (error) {
+                console.error("Error updating project:", error);
+                res.status(500).send({ message: 'Internal Server Error', error: error.message });
+            }
+        });
+        
         // POST Multer route to add Project data end
 
         // POST Multer route to add Image data start
