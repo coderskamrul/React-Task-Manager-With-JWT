@@ -8,8 +8,8 @@ import useProjects from '../../../Hooks/useProjects';
 const Projects = () => {
 
     // const {projects} = useContext(AuthContext);
-    const [ projects ] = useProjects();
-    console.log(projects);
+    const [ projects, isProjectLoading ] = useProjects();
+    // console.log(projects);
     // useEffect(() => {
     //     axios.get('http://localhost:5000/projects', {withCredentials: true})
     //         .then(res => {
@@ -23,6 +23,9 @@ const Projects = () => {
     //     );
     // },[])
     // console.log(projects);
+    if (isProjectLoading) {
+        return <div>Loading...</div>
+    }
     return (
         <>
             <div className="px-4">

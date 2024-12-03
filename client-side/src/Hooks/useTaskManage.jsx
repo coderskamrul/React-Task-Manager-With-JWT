@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 const useTaskManage = () => {
     const { user } = useAuth();
     const axiosSecure = useAxiosSecure();
-    const {refetch, data: tasks =[], isLoading: isTaskLoading, isError } = useQuery({
+    const {refetch: reFetchTask, data: tasks =[], isLoading: isTaskLoading, isError } = useQuery({
         queryKey: ["tasks", user?.email],
         queryFn: async () => {
             const res = await axiosSecure.get(`/dashboard/projects/tasks?email=${user?.email}`);
@@ -13,7 +13,7 @@ const useTaskManage = () => {
         }
     })
 
-    return [ tasks, isTaskLoading, refetch, isError ];
+    return [ tasks, isTaskLoading, reFetchTask, isError ];
     };
 
 export default useTaskManage;

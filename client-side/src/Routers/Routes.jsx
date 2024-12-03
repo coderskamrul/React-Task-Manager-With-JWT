@@ -10,6 +10,7 @@ import Dashboard from "../Pages/Dashboard/Dashboard";
 import DashboardLayout from "../Layout/DashboardLayout";
 import TaskBoard from "../Pages/Dashboard/TaskBoard/TaskBoard";
 import Projects from "../Pages/Dashboard/Projects/Projects";
+import Users from "../Pages/Dashboard/Users/Users";
 
 
 
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
         {
           path: 'projects/tasks/:id',
           element: <div className="p-2"> <TaskBoard /> </div>
+        },
+        {
+          path: 'users',
+          element: <Users />,
         },
       ]
     }

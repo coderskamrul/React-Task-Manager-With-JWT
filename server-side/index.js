@@ -243,9 +243,69 @@ async function run() {
         });
 
         //Post Tasks Route to Store Data in Database
+        // app.post('/tasks', async (req, res) => {
+        //     try {
+        //         // Find the task with the highest numeric portion of taskId
+        //         const lastTask = await taskCollection.findOne().sort({ taskId: -1 });
+
+        //         // Extract numeric part from the last task's taskId (e.g., "WHO-100" -> 100)
+        //         const lastTaskIdNumber = lastTask ? parseInt(lastTask.taskId.split("-")[1], 10) : 99;
+
+        //         // Determine the new numeric ID
+        //         const newTaskIdNumber = lastTaskIdNumber + 1;
+
+        //         // Create the new taskId with the "WHO-" prefix
+        //         const newTaskId = `WHO-${newTaskIdNumber}`;
+
+        //         const newTask = {
+        //             taskId: newTaskId,
+        //             title: req.body.title,
+        //             description: req.body.description,
+        //             priority: req.body.priority,
+        //             progress: req.body.progress,
+        //             tags: req.body.tags,
+        //             assignedUsers: req.body.assignedUsers,
+        //             date: req.body.date,
+        //             projectId: req.body.projectId,
+        //             createdBy: req.body.createdBy,
+        //             created_at: new Date()
+        //         };
+        //         const result = await taskCollection.insertOne(newTask);
+        //         res.status(200).send({ message: 'Task added successfully', result });
+        //     } catch (error) {
+        //         console.error(error);
+        //         res.status(500).send({ message: 'Internal Server Error' });
+        //     }
+        // });
+
         app.post('/tasks', async (req, res) => {
             try {
+                // Ensure `taskCollection` is defined and connected
+                if (!taskCollection) {
+                    return res.status(500).send({ message: 'Database not connected' });
+                }
+        
+                // Find the task with the highest numeric portion of taskId
+                const lastTask = await taskCollection.findOne({}, { sort: { taskId: -1 } });
+        
+                // Extract numeric part from the last task's taskId (e.g., "WHO-100" -> 100)
+                let lastTaskIdNumber = 99; // Default if no tasks exist
+                if (lastTask && lastTask.taskId) {
+                    const parts = lastTask.taskId.split('-');
+                    if (parts.length === 2 && !isNaN(parts[1])) {
+                        lastTaskIdNumber = parseInt(parts[1], 10);
+                    }
+                }
+        
+                // Determine the new numeric ID
+                const newTaskIdNumber = lastTaskIdNumber + 1;
+        
+                // Create the new taskId with the "WHO-" prefix
+                const newTaskId = `WHO-${newTaskIdNumber}`;
+        
+                // Construct the new task object
                 const newTask = {
+                    taskId: newTaskId,
                     title: req.body.title,
                     description: req.body.description,
                     priority: req.body.priority,
@@ -257,14 +317,51 @@ async function run() {
                     createdBy: req.body.createdBy,
                     created_at: new Date()
                 };
+        
+                // Insert the new task into the database
                 const result = await taskCollection.insertOne(newTask);
+        
+                // Send a success response
                 res.status(200).send({ message: 'Task added successfully', result });
+                // res.status(200).send({ message: 'Task added successfully', task: newTask });
             } catch (error) {
-                console.error(error);
+                console.error('Error creating task:', error);
                 res.status(500).send({ message: 'Internal Server Error' });
             }
         });
 
+        //Specific Project Tasks 'Progress' field update route
+        app.put('/task/edit', async (req, res) => {
+            try {
+                const id = req.body.taskId;
+                const newProgress = req.body.progress;
+                const query = { taskId: id };
+                const updatedTask = {
+                    $set: {
+                        progress: newProgress
+                    },
+                };
+                const result = await taskCollection.updateOne(query, updatedTask);
+                res.status(200).send({ message: 'Task progress updated successfully', result });
+            } catch (error) {
+                console.error("Error updating task progress", error);
+                res.status(500).send({ error: "Failed to update task progress" });
+            }
+        });
+
+        //Delete specific task route
+        app.delete('/task/delete/:id', async (req, res) => {
+            try {
+                const id = req.params.id;
+                const query = { taskId: id };
+                const result = await taskCollection.deleteOne(query);
+                res.status(200).send({ message: 'Task deleted successfully', result });
+            } catch (error) {
+                console.error("Error deleting task", error);
+                res.status(500).send({ error: "Failed to delete task" });
+            }
+        });
+        
         //Get the all tasks data from database
         app.get('/dashboard/projects/tasks', async (req, res) => {
             try {

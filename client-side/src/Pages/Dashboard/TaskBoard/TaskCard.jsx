@@ -1,103 +1,133 @@
-import React from 'react';
+import React, { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import TaskPopup from "./TaskPopup";
+import useAuth from "../../../Hooks/useAuth";
+import { useForm } from "react-hook-form";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import useTaskManage from "../../../Hooks/useTaskManage";
+import DotedButton from "../Projects/DotedButton";
 
-const TaskCard = () => {
+const TaskCard = ({ task, projectId }) => {
+  const [searchParams] = useSearchParams(); // Get search params from URL
+  const navigate = useNavigate(); // For navigating programmatically
+  const taskIdFromUrl = searchParams.get("taskid"); // Extract taskid from query
+  const isPopupOpen = taskIdFromUrl === String(task.taskId); // Check if popup should be open
+  const [popupVisible, setPopupVisible] = useState(isPopupOpen);
+  const { currentProject } = useAuth();
+  const getColumn = currentProject?.column;
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const axiosSecure = useAxiosSecure();
+  const [tasks, isTaskLoading, reFetchTask] = useTaskManage();
+  const closePopup = () => {
+    setPopupVisible(false);
+    navigate(`/dashboard/projects/tasks/${projectId}`); // Navigate back to tasks list when popup closes
+  };
+  const handleProgressChange = (progress) => {
+    if (progress != "") {
+      const progressData = { taskId: task.taskId, progress: progress };
+      axiosSecure.put(`/task/edit`, progressData)
+        .then((res) => {
+          console.log(res.data);
+          reFetchTask();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  };
+
+  const DottedButtonOptions = [
+    { label: 'Add manual time', type: 'addManualTimeTask' },
+    { label: 'Edit task name', type: 'editTaskName' },
+    { label: 'Add Due Time', type: 'addDueTimeTask' },
+    { label: 'Delete', type: 'deleteTask' },
+  ];
+
   return (
-    <div className="w-full h-fit bg-white shadow-md p-4 rounded">
-      <div className="w-full flex justify-between">
-        <div className="flex flex-1 gap-1 items-center text-sm font-medium text-red-600">
-          <span className="text-lg">
-            <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-              <path fill="none" d="M0 0h24v24H0z"></path>
-              <path d="M6 17.59L7.41 19 12 14.42 16.59 19 18 17.59l-6-6z"></path>
-              <path d="m6 11 1.41 1.41L12 7.83l4.59 4.58L18 11l-6-6z"></path>
-            </svg>
+    <div>
+      <div className="bg-white p-4 rounded-lg shadow-md mb-4">
+        <div className="flex relative justify-normal items-center mb-2">
+          <span
+            className="text-gray-500 font-bold border cursor-pointer rounded-md text-[10px] border-gray-300 mr-4 px-2 py-1 text-xs"
+            onClick={() => {
+              navigator.clipboard.writeText(task.taskId) // Copy to clipboard
+                .then(() => {
+                  alert("ID is copied"); // Show alert
+                })
+                .catch((err) => {
+                  console.error("Failed to copy text to clipboard: ", err); // Handle error
+                });
+            }}
+          >
+            {task.taskId}
           </span>
-          <span className="uppercase">High Priority</span>
+
+          {/* <span className="text-gray-500 text-xs">{task.date}</span> */}
+          <select
+            id="selectProgress"
+            {...register("progress")}
+            className="max-w-fit border border-gray-300 text-[10px] rounded-lg h-[23px] px-1 text-sm"
+            defaultValue={task.progress}
+            onChange={(e) => handleProgressChange(e.target.value)}
+          >
+            {
+              getColumn && getColumn.map((column) => {
+                return (
+                  <option key={column.id} value={column.id}>
+                    {column.title}
+                  </option>
+                );
+              })
+            }
+          </select>
+
+          <DotedButton options={DottedButtonOptions} top={0} right={0} cardId={task.taskId} />
         </div>
-        <div>
-          <div className="relative inline-block text-left">
-            <button className="inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium text-gray-600" type="button" aria-haspopup="menu" aria-expanded="false">
-              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 rounded-full bg-blue-600"></div>
-        <h4 className="line-clamp-1 text-black">Test task</h4>
-      </div>
-      <span className="text-sm text-gray-600">9-Feb-2024</span>
-      <div className="w-full border-t border-gray-200 my-2"></div>
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3">
-          <div className="flex gap-1 items-center text-sm text-gray-600">
-            <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5 2c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h3.586L12 21.414 15.414 18H19c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2H5zm14 14h-4.414L12 18.586 9.414 16H5V4h14v12z"></path>
-              <path d="M7 7h10v2H7zm0 4h7v2H7z"></path>
-            </svg>
-            <span>0</span>
-          </div>
-          <div className="flex gap-1 items-center text-sm text-gray-600">
-            <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-              <path fill="none" d="M0 0h24v24H0z"></path>
-              <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"></path>
-            </svg>
-            <span>2</span>
-          </div>
-          <div className="flex gap-1 items-center text-sm text-gray-600">
-            <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-              <path d="M80 368H16a16 16 0 0 0-16 16v64a16 16 0 0 0 16 16h64a16 16 0 0 0 16-16v-64a16 16 0 0 0-16-16zm0-320H16A16 16 0 0 0 0 64v64a16 16 0 0 0 16 16h64a16 16 0 0 0 16-16V64a16 16 0 0 0-16-16zm0 160H16a16 16 0 0 0-16 16v64a16 16 0 0 0 16 16h64a16 16 0 0 0 16-16v-64a16 16 0 0 0-16-16zm416 176H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16zm0-320H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16V80a16 16 0 0 0-16-16zm0 160H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16z"></path>
-            </svg>
-            <span>0/1</span>
-          </div>
-        </div>
-        <div className="flex flex-row-reverse">
-          <div className="w-7 h-7 rounded-full text-white flex items-center justify-center text-sm -mr-1 bg-blue-600">
-            <div className="px-4">
-              <div className="relative">
-                <button className="group inline-flex items-center outline-none" type="button" aria-expanded="false">
-                  <span>CA</span>
-                </button>
+        <Link
+          to={`/dashboard/projects/tasks/${projectId}?taskid=${task.taskId}`} // Add taskid to URL
+          onClick={() => setPopupVisible(true)} // Open popup when the title is clicked
+        >
+          <h3 className="font-semibold text-gray-800 mb-1">{task.title}</h3>
+        </Link>
+        <p className="text-gray-600 text-sm mb-3">{task.description}</p>
+        <div className="flex space-x-1 mb-2">
+          {
+          // task.assignees && task.assignees.map((assignee, index) => (
+              // <span
+              //   key={index}
+              //   className="bg-blue-500 text-white rounded-full h-6 w-6 flex items-center capitalize justify-center text-xs"
+              // >
+              //   {assignee[0]}
+              // </span>
+              // ssss
+              <div className="flex -space-x-2">
+                {task.assignees && task.assignees.slice(0, 1).map(assignee => (
+                  <span
+                  key={assignee[0]}
+                className="bg-blue-500 text-white rounded-full h-6 w-6 flex items-center capitalize justify-center text-xs"
+              >
+                {assignee[0]}
+              </span>
+                ))}
+                {task.assignees.length >= 1 && (
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
+                    +{task.assignees.length - 1}
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
-          <div className="w-7 h-7 rounded-full text-white flex items-center justify-center text-sm -mr-1 bg-yellow-600">
-            <div className="px-4">
-              <div className="relative">
-                <button className="group inline-flex items-center outline-none" type="button" aria-expanded="false">
-                  <span>JS</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="w-7 h-7 rounded-full text-white flex items-center justify-center text-sm -mr-1 bg-red-600">
-            <div className="px-4">
-              <div className="relative">
-                <button className="group inline-flex items-center outline-none" type="button" aria-expanded="false">
-                  <span>AJ</span>
-                </button>
-              </div>
-            </div>
-          </div>
+
+              //eeee
+            // ))
+            }
         </div>
-      </div>
-      <div className="py-4 border-t border-gray-200">
-        <h5 className="text-base line-clamp-1 text-black">Task manager youtube tutorial</h5>
-        <div className="p-4 space-x-8">
-          <span className="text-sm text-gray-600">9-Feb-2024</span>
-          <span className="bg-blue-600/10 px-3 py-1 rounded-full text-blue-700 font-medium">tutorial</span>
+        <div className="text-sm text-blue-600 bg-blue-100 rounded-full px-2 py-1 inline-block mb-3">
+          {task.tags[0]}
         </div>
+        <button className="text-blue-500 text-sm font-medium mt-2">Add Subtask</button>
       </div>
-      <div className="w-full pb-2">
-        <button className="w-full flex gap-4 items-center text-sm text-gray-500 font-semibold disabled:cursor-not-allowed disabled:text-gray-300">
-          <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="text-lg" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-            <path d="M416 277.333H277.333V416h-42.666V277.333H96v-42.666h138.667V96h42.666v138.667H416v42.666z"></path>
-          </svg>
-          <span>ADD SUBTASK</span>
-        </button>
-      </div>
+
+      {/* Render the popup if it's visible */}
+      {popupVisible && <TaskPopup task={task} onClose={closePopup} />}
     </div>
   );
 };

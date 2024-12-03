@@ -20,7 +20,7 @@ const AddTaskForm = () => {
     const { user } = useAuth();
     const axiosSecure = useAxiosSecure();
     const [users] = useUsers();
-    const [ tasks, isTaskLoading, refetch ] = useTaskManage();
+    const [ tasks, isTaskLoading, reFetchTask ] = useTaskManage();
     // console.dir(currentProject);
     const getColumn = currentProject?.column;
     const getTags = currentProject?.tags;
@@ -33,7 +33,7 @@ const AddTaskForm = () => {
 
     //TODO: Add tags to the Project Schema and fetch them here dynamic from the database and project wise
     const tagOptions = getTags && getTags?.map((tag) => { return { key: tag.key, value: tag.value }; });
-    console.log(tagOptions);
+    // console.log(tagOptions);
 
     // const usersOptions = ["User 1", "User 2", "User 3", "User 4"];
     useEffect(() => {
@@ -52,9 +52,9 @@ const AddTaskForm = () => {
 
     //   const { onSubmit, isLoading } = useFormHandler(
     //     (data) => axios.post("/api/tasks", data),
-    //     ["tasks"] // Query key to refetch
+    //     ["tasks"] // Query key to reFetchTask
     //   );
-    console.log(currentProject?.projectId);
+    // console.log(currentProject?.projectId);
     const submitHandler = (data) => {
         // onSubmit(data);
         const taskData = {
@@ -67,9 +67,9 @@ const AddTaskForm = () => {
         // console.log(taskData);
         axiosSecure.post("/tasks", taskData)
             .then(res => {
-                console.log(res.data);
+                // console.log(res.data);
                 if( res.data.result.acknowledged ) {
-                    refetch();
+                    reFetchTask();
                     Swal.fire({
                         position: "top-end",
                         icon: "success",
@@ -173,10 +173,6 @@ const AddTaskForm = () => {
                                     );
                                 })
                             }
-                            {/* <option value="backlog">Backlog</option>
-                            <option value="todo">ToDo</option>
-                            <option value="inProgress">In Progress</option>
-                            <option value="completed">Completed</option> */}
                         </select>
                     </div>
 
