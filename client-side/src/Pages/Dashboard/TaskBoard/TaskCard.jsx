@@ -7,7 +7,7 @@ import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import useTaskManage from "../../../Hooks/useTaskManage";
 import DotedButton from "../Projects/DotedButton";
 
-const TaskCard = ({ task, projectId }) => {
+const TaskCard = ({ task, projectId, columnTitle, onDragStart }) => {
   const [searchParams] = useSearchParams(); // Get search params from URL
   const navigate = useNavigate(); // For navigating programmatically
   const taskIdFromUrl = searchParams.get("taskid"); // Extract taskid from query
@@ -44,7 +44,11 @@ const TaskCard = ({ task, projectId }) => {
   ];
 
   return (
-    <div>
+    <div
+      draggable
+      onDragStart={(e) => onDragStart(e, task.id, 'task')}
+      className="rounded-lg shadow-sm p-2 cursor-move mb-2"
+    >
       <div className="bg-white p-4 rounded-lg shadow-md mb-4">
         <div className="flex relative justify-normal items-center mb-2">
           <span

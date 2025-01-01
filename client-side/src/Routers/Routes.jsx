@@ -11,6 +11,8 @@ import DashboardLayout from "../Layout/DashboardLayout";
 import TaskBoard from "../Pages/Dashboard/TaskBoard/TaskBoard";
 import Projects from "../Pages/Dashboard/Projects/Projects";
 import Users from "../Pages/Dashboard/Users/Users";
+import TaskDnd from "../Pages/Dashboard/TaskBoard/TaskDnd";
+import TestTask from "../Pages/Dashboard/TaskBoard/TestTask";
 
 
 
@@ -38,6 +40,11 @@ const router = createBrowserRouter([
         {
             path: '/tasks',
             element: <PrivateRouter> <TaskView></TaskView> </PrivateRouter>
+        },
+        {
+          // npm install react react-dom @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+          path: 'taskdnd',
+          element: <TestTask />,
         },
       ]
     },
