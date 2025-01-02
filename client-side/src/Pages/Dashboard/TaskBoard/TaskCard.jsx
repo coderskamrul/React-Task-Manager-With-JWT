@@ -49,7 +49,7 @@ const TaskCard = ({ task, projectId, columnTitle, onDragStart }) => {
       onDragStart={(e) => onDragStart(e, task.id, 'task')}
       className="rounded-lg shadow-sm p-2 cursor-move mb-2"
     >
-      <div className="bg-white p-4 rounded-lg shadow-md mb-4">
+      <div className="bg-white p-4 rounded-lg shadow-md">
         <div className="flex relative justify-normal items-center mb-2">
           <span
             className="text-gray-500 font-bold border cursor-pointer rounded-md text-[10px] border-gray-300 mr-4 px-2 py-1 text-xs"

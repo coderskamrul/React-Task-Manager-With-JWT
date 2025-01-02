@@ -292,7 +292,7 @@ const TaskNewCard = ({ task, columnTitle, onDragStart }) => {
 const Column = ({ column, tasks, onDragStart, onDragOver, onDrop, id }) => {
   return (
     <div 
-      className="h-96 flex-none w-[300px] rounded-lg"
+      className="h-[36rem] flex-none w-[300px] rounded-lg"
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, column.id)}
     >
@@ -599,11 +599,11 @@ const TaskBoard = () => {
   };
 
   return (
-    <div className="w-full h-96 sm:px-0 bg-gray-100">
+    <div className="w-full sm:px-0">
      
       <div className="w-full mt-2">
         <div className='py-1' >
-        <div className='overflow-x-auto' >
+        <div className='overflow-x-auto h-screen' >
         <div className="flex justify-center gap-4 min-w-max">
           {board.columns.map((column) => (
             <Column
