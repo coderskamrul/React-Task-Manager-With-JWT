@@ -292,7 +292,7 @@ const TaskNewCard = ({ task, columnTitle, onDragStart }) => {
 const Column = ({ column, tasks, onDragStart, onDragOver, onDrop, id }) => {
   return (
     <div
-      className="h-[36rem] flex-none w-[300px] rounded-lg"
+      className="h-[36rem] flex-none w-[300px] rounded-lg bg-blue-100"
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, column.id)}
     >
@@ -303,7 +303,7 @@ const Column = ({ column, tasks, onDragStart, onDragOver, onDrop, id }) => {
       >
         <h2>{column.title}</h2>
       </div>
-      <div className="h-96 overflow-y-scroll scrollbar-thick scrollbar-thumb-blue-500 scrollbar-track-blue-100">
+      <div className="overflow-y-scroll scrollbar-thick scrollbar-thumb-blue-500 scrollbar-track-blue-100">
         {tasks.map((task) => (
           // <TaskNewCard key={task.id} task={task} columnTitle={column.title} onDragStart={onDragStart} />
           <TaskCard key={task.id} task={task} projectId={id} columnTitle={column.title} onDragStart={onDragStart} />
@@ -407,8 +407,8 @@ const TaskBoard = () => {
   //TODO: Refactor columns to be dynamic
   const [columns, setColumns] = useState(getProjects?.column || []);
   const [board, setBoard] = useState({ columns: columns || [] });
-  console.dir(board);
-  // console.log(columns);
+  //console.log(board);
+  //console.log(columns);
 
   useEffect(() => {
     if (getProjects) {
@@ -417,34 +417,44 @@ const TaskBoard = () => {
       setBoard({ columns: projectColumns });
     }
   }, [getProjects]);
-  // console.log('id - ', id);
-  // Set the current project context when projects are loaded
   useEffect(() => {
     if (getProjects) {
       setCurrentProject(getProjects);
-      // console.log(getProjects);
-      // setColumns(getProjects.column);
     }
   }, [getProjects, setCurrentProject]);
 
   // Update columns dynamically based on tasks
+  //console.log(getProjects.column);
+  const mergeTasks = (columns) => {
+    return columns.reduce((acc, column) => {
+      if (column.tasks && column.tasks.length > 0) {
+        acc = acc.concat(column.tasks);
+      }
+      return acc;
+    }, []);
+  };
   useEffect(() => {
-    if (getTask && Array.isArray(getTask)) {
+    if (getTask && Array.isArray(getTask) && getProjects.column) {
       // Map tasks to the appropriate column based on progress
-      const updatedColumns = columns && columns.map((column) => ({
+      console.log(mergeTasks(getProjects.column));
+      console.log(getTask);
+      const updatedColumns = getProjects.column && getProjects.column.map((column) => ({
         ...column,
-        tasks: getTask
+        tasks: mergeTasks(getProjects.column)
           .filter((task) => task.progress === column.id && task.projectId === id)
           .map((task) => ({
-            id: task._id,
+            id: task.id,
+            projectId: task.projectId,
             taskId: task.taskId,
             title: task.title,
             priority: task.priority,
             description: task.description,
             date: task.date,
             tags: task.tags,
-            assignees: task.assignedUsers,
+            assignedUsers: task.assignedUsers,
             progress: task.progress,
+            createdBy: task.createdBy,
+            created_at: task.created_at,
           })),
       }));
 
@@ -461,7 +471,7 @@ const TaskBoard = () => {
     }
     // console.log(getTask);
 
-  }, [getTask, columns, id]); // Dependency array excludes "columns" to avoid infinite loop
+  }, [getTask, columns, id, getProjects.column]); // Dependency array excludes "columns" to avoid infinite loop
 
 
   const handleAddColumn = async () => {
@@ -525,12 +535,31 @@ const TaskBoard = () => {
   const handleDrop = (e, targetColumnId) => {
     e.preventDefault();
     const draggedItemId = e.dataTransfer.getData('text');
-
+  
+    const updateColumnsInBackend = async (updatedColumns) => {
+      try {
+        console.log('Updating columns in backend');
+        const res = await axiosSecure.put(`/projects/${id}/columns`, updatedColumns);
+        console.log('API call response:', res.data);
+        if (res.data.result) {
+          Swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: "Update successful",
+            showConfirmButton: false,
+            timer: 1500
+          });
+        }
+      } catch (err) {
+        console.log('API call error:', err);
+      }
+    };
+  
     if (draggedType === 'task') {
       const updatedBoard = { ...board };
       let task;
       let sourceColumnId;
-
+  
       // Find and remove the task from its original column
       for (const column of updatedBoard.columns) {
         const taskIndex = column.tasks.findIndex(t => t.id === draggedItemId);
@@ -541,7 +570,7 @@ const TaskBoard = () => {
           break;
         }
       }
-
+  
       if (task) {
         const targetColumn = updatedBoard.columns.find(c => c.id === targetColumnId);
         if (targetColumn) {
@@ -553,23 +582,29 @@ const TaskBoard = () => {
             // If dropping on a different column, add to the end
             task.columnTitle = targetColumn.title;
             targetColumn.tasks.push(task);
+  
+            // Call the API endpoint only when the task is moved to a different column
+            updateColumnsInBackend(updatedBoard.columns);
           }
         }
       }
-
+  
       setBoard(updatedBoard);
     } else if (draggedType === 'column') {
       const updatedColumns = [...board.columns];
       const draggedColumnIndex = updatedColumns.findIndex(c => c.id === draggedItemId);
       const targetColumnIndex = updatedColumns.findIndex(c => c.id === targetColumnId);
-
-      if (draggedColumnIndex !== -1 && targetColumnIndex !== -1) {
+  
+      if (draggedColumnIndex !== -1 && targetColumnIndex !== -1 && draggedColumnIndex !== targetColumnIndex) {
         const [draggedColumn] = updatedColumns.splice(draggedColumnIndex, 1);
         updatedColumns.splice(targetColumnIndex, 0, draggedColumn);
         setBoard({ ...board, columns: updatedColumns });
+  
+        // Call the API endpoint when a column is moved
+        updateColumnsInBackend(updatedColumns);
       }
     }
-
+  
     setDraggedItem(null);
     setDraggedType(null);
   };
@@ -599,8 +634,8 @@ const TaskBoard = () => {
   };
 
   return (
-      <>
-        <div className="w-full sm:px-0">
+    <>
+      <div className="w-full sm:px-0">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold capitalize">Tasks List</h2>
           <button
@@ -644,34 +679,34 @@ const TaskBoard = () => {
             </svg>
           </button>
         </div>
-        
-          <div className="w-full mt-2">
-            <div className='py-1' >
-              <div className='overflow-x-auto h-screen' >
-                <div className="flex justify-center gap-4 min-w-max">
-                  {board.columns.map((column) => (
-                    <Column
-                      key={column.id}
-                      column={column}
-                      tasks={column.tasks}
-                      onDragStart={handleDragStart}
-                      onDragOver={handleDragOver}
-                      onDrop={handleDrop}
-                      id={id}
-                    />
-                  ))}
-                </div>
+
+        <div className="w-full mt-2">
+          <div className='py-1' >
+            <div className='overflow-x-auto h-screen' >
+              <div className="flex justify-center gap-4 min-w-max">
+                {board.columns.map((column) => (
+                  <Column
+                    key={column.id}
+                    column={column}
+                    tasks={column.tasks}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    id={id}
+                  />
+                ))}
               </div>
             </div>
           </div>
-          <AddTaskDialog
-            isOpen={isAddTaskOpen}
-            onClose={() => setIsAddTaskOpen(false)}
-            onAddTask={onAddTask}
-          />
         </div>
-        <AddTaskForm />
-        </>
+        <AddTaskDialog
+          isOpen={isAddTaskOpen}
+          onClose={() => setIsAddTaskOpen(false)}
+          onAddTask={onAddTask}
+        />
+      </div>
+      <AddTaskForm />
+    </>
   );
 };
 

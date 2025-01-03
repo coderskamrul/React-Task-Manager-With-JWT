@@ -112,7 +112,7 @@ const DashboardLayout = () => {
                 </div>
                 {/* <!-- ./Sidebar --> */}
 
-                <div className="h-full ml-14 mt-14 mb-10 md:ml-64">
+                <div className="h-full ml-14 mt-14 md:ml-64">
                     {/* <!-- Child Outlet --> */}
                     <Outlet />
                 </div>

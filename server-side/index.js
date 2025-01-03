@@ -400,6 +400,49 @@ async function run() {
             }
         });
 
+        //Put router to updated '/projects/${id}/columns' column data in project collection as well as task progress field in task collection
+        app.put('/projects/:id/columns', async (req, res) => {
+            try {
+                const id = req.params.id;
+                const newColumn = req.body;
+                const query = { projectId: id };
+                console.log(id);
+                console.dir(newColumn);
+                //ss
+                newColumn.forEach(column => {
+                    //console.log(`Column ID: ${column.id}, Title: ${column.title}`);
+                  
+                    // Iterate over each task in the column
+                    column.tasks.forEach(task => {
+                      //console.log(`Task ID: ${task.id}, Title: ${task.title}`);
+                  
+                      // Modify the task as needed
+                      task.progress = column.id;
+                    });
+                  });
+                //ee
+                const updatedProject = {
+                    $set: {
+                        column: newColumn,
+                    },
+                };
+                const result = await projectCollection.updateOne(query, updatedProject);
+                if (result.matchedCount === 0) {
+                    return res.status(404).send({ message: 'Project not found' });
+                }
+                // const updatedTask = {
+                //     $set: {
+                //         progress: newColumn.progress
+                //     },
+                // };
+                //const resultTask = await taskCollection.updateOne(query, updatedTask);
+                res.status(200).send({ message: 'Column added successfully moved', result});
+            } catch (error) {
+                console.error("Error updating project:", error);
+                res.status(500).send({ message: 'Internal Server Error', error: error.message });
+            }
+        });
+
         // GET Tasks route to fetch all user data
         // app.get('/upload-image', async (req, res) => {
         //     try {

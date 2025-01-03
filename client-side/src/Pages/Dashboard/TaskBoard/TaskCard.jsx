@@ -105,7 +105,7 @@ const TaskCard = ({ task, projectId, columnTitle, onDragStart }) => {
               // </span>
               // ssss
               <div className="flex -space-x-2">
-                {task.assignees && task.assignees.slice(0, 1).map(assignee => (
+                {task.assignedUsers && task.assignedUsers.slice(0, 1).map(assignee => (
                   <span
                   key={assignee[0]}
                 className="bg-blue-500 text-white rounded-full h-6 w-6 flex items-center capitalize justify-center text-xs"
@@ -113,9 +113,9 @@ const TaskCard = ({ task, projectId, columnTitle, onDragStart }) => {
                 {assignee[0]}
               </span>
                 ))}
-                {task.assignees.length >= 1 && (
+                {task.assignedUsers.length >= 1 && (
                   <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
-                    +{task.assignees.length - 1}
+                    +{task.assignedUsers.length - 1}
                   </div>
                 )}
               </div>
