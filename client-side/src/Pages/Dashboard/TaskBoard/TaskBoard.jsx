@@ -291,12 +291,12 @@ const TaskNewCard = ({ task, columnTitle, onDragStart }) => {
 
 const Column = ({ column, tasks, onDragStart, onDragOver, onDrop, id }) => {
   return (
-    <div 
+    <div
       className="h-[36rem] flex-none w-[300px] rounded-lg"
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, column.id)}
     >
-      <div 
+      <div
         className="p-4 font-medium border-b bg-white rounded-t-lg cursor-move"
         draggable
         onDragStart={(e) => onDragStart(e, column.id, 'column')}
@@ -393,7 +393,7 @@ const TaskBoard = () => {
   const [draggedType, setDraggedType] = useState(null);
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [activeColumn, setActiveColumn] = useState(null);
-  
+
   //old task start
   const { id } = useParams();
   const [projects, isProjectLoading] = useProjects();
@@ -405,7 +405,7 @@ const TaskBoard = () => {
     ? projects.find((project) => project.projectId === id)
     : "";
   //TODO: Refactor columns to be dynamic
-  const [columns, setColumns] = useState( getProjects?.column || [] );
+  const [columns, setColumns] = useState(getProjects?.column || []);
   const [board, setBoard] = useState({ columns: columns || [] });
   console.dir(board);
   // console.log(columns);
@@ -599,33 +599,79 @@ const TaskBoard = () => {
   };
 
   return (
-    <div className="w-full sm:px-0">
-     
-      <div className="w-full mt-2">
-        <div className='py-1' >
-        <div className='overflow-x-auto h-screen' >
-        <div className="flex justify-center gap-4 min-w-max">
-          {board.columns.map((column) => (
-            <Column
-              key={column.id}
-              column={column}
-              tasks={column.tasks}
-              onDragStart={handleDragStart}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              id={id}
-            />
-          ))}
+      <>
+        <div className="w-full sm:px-0">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold capitalize">Tasks List</h2>
+          <button
+            type="button"
+            className="flex flex-row-reverse items-center gap-1 bg-blue-600 text-white rounded-md px-3 py-2"
+          >
+            <span className="" onClick={handleAddColumn}>Create Column</span>
+            {/* <button >Create Task</button> */}
+
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              strokeWidth="0"
+              viewBox="0 0 512 512"
+              className="text-lg"
+              height="1em"
+              width="1em"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M416 277.333H277.333V416h-42.666V277.333H96v-42.666h138.667V96h42.666v138.667H416v42.666z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="flex flex-row-reverse items-center gap-1 bg-blue-600 text-white rounded-md px-3 py-2"
+          >
+            <span className="" onClick={() => document.getElementById('my_modal_2').showModal()}>Create Task</span>
+            {/* <button >Create Task</button> */}
+
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              strokeWidth="0"
+              viewBox="0 0 512 512"
+              className="text-lg"
+              height="1em"
+              width="1em"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M416 277.333H277.333V416h-42.666V277.333H96v-42.666h138.667V96h42.666v138.667H416v42.666z" />
+            </svg>
+          </button>
         </div>
+        
+          <div className="w-full mt-2">
+            <div className='py-1' >
+              <div className='overflow-x-auto h-screen' >
+                <div className="flex justify-center gap-4 min-w-max">
+                  {board.columns.map((column) => (
+                    <Column
+                      key={column.id}
+                      column={column}
+                      tasks={column.tasks}
+                      onDragStart={handleDragStart}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                      id={id}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <AddTaskDialog
+            isOpen={isAddTaskOpen}
+            onClose={() => setIsAddTaskOpen(false)}
+            onAddTask={onAddTask}
+          />
         </div>
-        </div>
-      </div>
-      <AddTaskDialog
-        isOpen={isAddTaskOpen}
-        onClose={() => setIsAddTaskOpen(false)}
-        onAddTask={onAddTask}
-      />
-    </div>
+        <AddTaskForm />
+        </>
   );
 };
 
