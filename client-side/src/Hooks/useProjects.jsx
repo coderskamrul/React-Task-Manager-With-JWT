@@ -11,7 +11,7 @@ const useProjects = () => {
     // Find the current user after users are loaded
     const currentUser = !usersLoading ? users.find(u => u.email === user?.email) : null;
 
-    const { data: projects = [], isLoading: isProjectLoading, isError, refetch } = useQuery({
+    const { data: projects = [], isLoading: isProjectLoading, isError, refetch: reFetchProject } = useQuery({
         queryKey: ["projects", user?.email, currentUser?.role],
         enabled: !!user?.email && !!currentUser, // Only fetch when user and currentUser are available
         queryFn: async () => {
@@ -20,7 +20,7 @@ const useProjects = () => {
         }
     });
 
-    return [projects, isProjectLoading || usersLoading, isError, refetch];
+    return [projects, isProjectLoading, reFetchProject || usersLoading, isError];
 };
 
 export default useProjects;

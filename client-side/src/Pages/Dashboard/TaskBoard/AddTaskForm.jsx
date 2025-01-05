@@ -8,6 +8,7 @@ import useUsers from "../../../Hooks/useUsers";
 import MultiSelectDropdown from "../../../Components/MultiSelectDropdown";
 import Swal from 'sweetalert2';
 import useTaskManage from "../../../Hooks/useTaskManage";
+import useProject from "../../../Hooks/useProjects";
 
 // import {useFormHandler} from "../../../Hooks/useFormHandler";
 
@@ -21,6 +22,7 @@ const AddTaskForm = () => {
     const axiosSecure = useAxiosSecure();
     const [users] = useUsers();
     const [ tasks, isTaskLoading, reFetchTask ] = useTaskManage();
+    const [projects, isProjectLoading, reFetchProject] = useProject();
     // console.dir(currentProject);
     const getColumn = currentProject?.column;
     const getTags = currentProject?.tags;
@@ -69,7 +71,7 @@ const AddTaskForm = () => {
             .then(res => {
                 // console.log(res.data);
                 if( res.data.result.acknowledged ) {
-                    reFetchTask();
+                    reFetchProject();
                     Swal.fire({
                         position: "top-end",
                         icon: "success",

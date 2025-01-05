@@ -280,36 +280,44 @@ async function run() {
 
         app.post('/tasks', async (req, res) => {
             try {
-                // Ensure `taskCollection` is defined and connected
-                if (!taskCollection) {
-                    return res.status(500).send({ message: 'Database not connected' });
+                //Get all the task data from the project collection and update the task data in the column field
+                // const allTasks = projectCollection.aggregate([
+                //     {
+                //         $match: { projectId: req.body.projectId }
+                //     },
+                //     {
+                //         $unwind: '$column'
+                //     },
+                //     {
+                //         $unwind: '$column.tasks'
+                //     },
+                //     {
+                //         $project: {
+                //             _id: 0,
+                //             projectId: 1,
+                //             task: "$column.tasks",
+                //         }
+                //     }
+                // ]);
+                // console.log(allTasks);
+                //get specific projects data using projectId
+                const project = await projectCollection.findOne({ projectId: req.body.projectId });
+                //console.log(project);
+                if (!project) {
+                    return res.status(404).send({ message: 'Project not found' });
                 }
-        
-                // Find the task with the highest numeric portion of taskId
-                const lastTask = await taskCollection.findOne({}, { sort: { taskId: -1 } });
-        
-                // Extract numeric part from the last task's taskId (e.g., "WHO-100" -> 100)
-                let lastTaskIdNumber = 99; // Default if no tasks exist
-                if (lastTask && lastTask.taskId) {
-                    const parts = lastTask.taskId.split('-');
-                    if (parts.length === 2 && !isNaN(parts[1])) {
-                        lastTaskIdNumber = parseInt(parts[1], 10);
-                    }
+                //inside project data get the column data using column id from the request body i want to store the task data in this column
+                const column = project.column.find(col => col.id === req.body.progress);
+                if (!column) {
+                    return res.status(404).send({ message: 'Column not found' });
                 }
-        
-                // Determine the new numeric ID
-                const newTaskIdNumber = lastTaskIdNumber + 1;
-        
-                // Create the new taskId with the "WHO-" prefix
-                const newTaskId = `WHO-${newTaskIdNumber}`;
-        
-                // Construct the new task object
                 const newTask = {
-                    taskId: newTaskId,
+                    id: new ObjectId().toHexString(),
+                    taskId: generateUniqueId(),
                     title: req.body.title,
                     description: req.body.description,
                     priority: req.body.priority,
-                    progress: req.body.progress,
+                    progress: column.id,
                     tags: req.body.tags,
                     assignedUsers: req.body.assignedUsers,
                     date: req.body.date,
@@ -317,17 +325,73 @@ async function run() {
                     createdBy: req.body.createdBy,
                     created_at: new Date()
                 };
-        
-                // Insert the new task into the database
-                const result = await taskCollection.insertOne(newTask);
-        
-                // Send a success response
-                res.status(200).send({ message: 'Task added successfully', result });
-                // res.status(200).send({ message: 'Task added successfully', task: newTask });
+                column.tasks.push(newTask);
+                const query = { projectId: req.body.projectId };
+                const updatedProject = {
+                    $set: {
+                        column: project.column,
+                    },
+                };
+                const result = await projectCollection.updateOne(query, updatedProject);
+                res.status(200).send({ message: 'Task added successfully ok', result });
             } catch (error) {
-                console.error('Error creating task:', error);
+                console.log('not task save');
+                console.error(error);
                 res.status(500).send({ message: 'Internal Server Error' });
             }
+                
+
+
+
+
+                // // Ensure `taskCollection` is defined and connected
+                // if (!taskCollection) {
+                //     return res.status(500).send({ message: 'Database not connected' });
+                // }
+        
+                // // Find the task with the highest numeric portion of taskId
+                // const lastTask = await taskCollection.findOne({}, { sort: { taskId: -1 } });
+        
+                // // Extract numeric part from the last task's taskId (e.g., "WHO-100" -> 100)
+                // let lastTaskIdNumber = 99; // Default if no tasks exist
+                // if (lastTask && lastTask.taskId) {
+                //     const parts = lastTask.taskId.split('-');
+                //     if (parts.length === 2 && !isNaN(parts[1])) {
+                //         lastTaskIdNumber = parseInt(parts[1], 10);
+                //     }
+                // }
+        
+                // // Determine the new numeric ID
+                // const newTaskIdNumber = lastTaskIdNumber + 1;
+        
+                // // Create the new taskId with the "WHO-" prefix
+                // const newTaskId = `WHO-${newTaskIdNumber}`;
+        
+                // Construct the new task object
+                // const newTask = {
+                //     taskId: newTaskId,
+                //     title: req.body.title,
+                //     description: req.body.description,
+                //     priority: req.body.priority,
+                //     progress: req.body.progress,
+                //     tags: req.body.tags,
+                //     assignedUsers: req.body.assignedUsers,
+                //     date: req.body.date,
+                //     projectId: req.body.projectId,
+                //     createdBy: req.body.createdBy,
+                //     created_at: new Date()
+                // };
+        
+                // Insert the new task into the database
+               // const result = await taskCollection.insertOne(newTask);
+        
+                // Send a success response
+            //     res.status(200).send({ message: 'Task added successfully', result });
+            //     // res.status(200).send({ message: 'Task added successfully', task: newTask });
+            // } catch (error) {
+            //     console.error('Error creating task:', error);
+            //     res.status(500).send({ message: 'Internal Server Error' });
+            // }
         });
 
         //Specific Project Tasks 'Progress' field update route

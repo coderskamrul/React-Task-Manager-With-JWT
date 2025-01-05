@@ -392,7 +392,7 @@ const TaskBoard = () => {
     }, []);
   };
   useEffect(() => {
-    if (getTask && Array.isArray(getTask) && getProjects.column) {
+    if (getProjects?.column) {
       // Map tasks to the appropriate column based on progress
       console.log(mergeTasks(getProjects.column));
       console.log(getTask);
@@ -429,7 +429,7 @@ const TaskBoard = () => {
     }
     // console.log(getTask);
 
-  }, [getTask, columns, id, getProjects.column]); // Dependency array excludes "columns" to avoid infinite loop
+  }, [columns, id]); // Dependency array excludes "columns" to avoid infinite loop
 
 
   const handleAddColumn = async () => {
