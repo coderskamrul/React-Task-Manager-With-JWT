@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useTaskManage from '../../../Hooks/useTaskManage';
+import useProjects from '../../../Hooks/useProjects';
+import Swal from 'sweetalert2';
 
-function DotedButton( {options = [], top, right, cardId } ) {
+function DotedButton( {options = [], top, right, cardId, projectId } ) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null); // Ref for detecting outside clicks
   const axiosSecure = useAxiosSecure();
   const [ tasks, isTaskLoading, reFetchTask ] = useTaskManage();
+  const [projects, isProjectLoading, reFetchProject] = useProjects();
+
   const handleOptionClick = (type) => {
     // Perform actions based on the type
     switch (type) {
@@ -32,10 +36,18 @@ function DotedButton( {options = [], top, right, cardId } ) {
         break;
       case 'deleteTask':
         console.log('deleteTask...');
-        axiosSecure.delete(`/task/delete/${cardId}`)
+        axiosSecure.delete(`/task/delete/${projectId}/${cardId}`)
           .then((res) => {
-            console.log(res.data);
-            reFetchTask();
+            reFetchProject();
+            if (res.statusText === "OK") {
+              Swal.fire({
+                 position: "top-end",
+                 icon: "success",
+                 title: "Task is delete successfully",
+                 showConfirmButton: false,
+                 timer: 1500
+                });
+            }
           })
           .catch((err) => {
             console.log(err);

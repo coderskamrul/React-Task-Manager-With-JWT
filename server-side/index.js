@@ -426,14 +426,25 @@ async function run() {
         });
 
         //Delete specific task route
-        app.delete('/task/delete/:id', async (req, res) => {
+        app.delete('/task/delete/:projectId/:taskId', async (req, res) => {
             try {
-                const id = req.params.id;
-                const query = { taskId: id };
-                const result = await taskCollection.deleteOne(query);
-                res.status(200).send({ message: 'Task deleted successfully', result });
+                const { projectId, taskId } = req.params;
+        
+                // Update query
+                const result = await projectCollection.updateOne(
+                    { projectId: projectId, "column.tasks.taskId": taskId }, // Match project and task
+                    {
+                        $pull: { "column.$.tasks": { taskId: taskId } } // Pull task from the specific column
+                    }
+                );
+        
+                if (result.modifiedCount > 0) {
+                    res.status(200).send({ message: "Task deleted successfully" });
+                } else {
+                    res.status(404).send({ message: "Task not found or already deleted" });
+                }
             } catch (error) {
-                console.error("Error deleting task", error);
+                console.error("Error deleting task:", error);
                 res.status(500).send({ error: "Failed to delete task" });
             }
         });

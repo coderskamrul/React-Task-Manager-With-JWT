@@ -354,7 +354,7 @@ const TaskBoard = () => {
 
   //old task start
   const { id } = useParams();
-  const [projects, isProjectLoading] = useProjects();
+  const [projects, isProjectLoading, reFetchProject] = useProjects();
   const [tasks, isTaskLoading, reFetchTask] = useTaskManage();
   const { setCurrentProject } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
@@ -394,8 +394,8 @@ const TaskBoard = () => {
   useEffect(() => {
     if (getProjects?.column) {
       // Map tasks to the appropriate column based on progress
-      console.log(mergeTasks(getProjects.column));
-      console.log(getTask);
+      // console.log(mergeTasks(getProjects.column));
+      // console.log(getTask);
       const updatedColumns = getProjects.column && getProjects.column.map((column) => ({
         ...column,
         tasks: mergeTasks(getProjects.column)
@@ -454,8 +454,9 @@ const TaskBoard = () => {
 
       axiosSecure.put(`/projects/${id}`, newColumn)
         .then(res => {
-          console.log(res.data);
+          // console.log(res.data);
           if (res.data.result.acknowledged) {
+            reFetchProject();
             Swal.fire({
               position: "top-end",
               icon: "success",

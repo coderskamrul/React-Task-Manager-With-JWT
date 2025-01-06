@@ -85,7 +85,7 @@ const TaskCard = ({ task, projectId, columnTitle, onDragStart }) => {
             }
           </select>
 
-          <DotedButton options={DottedButtonOptions} top={0} right={0} cardId={task.taskId} />
+          <DotedButton options={DottedButtonOptions} top={0} right={0} cardId={task.taskId} projectId={projectId} />
         </div>
         <Link
           to={`/dashboard/projects/tasks/${projectId}?taskid=${task.taskId}`} // Add taskid to URL
