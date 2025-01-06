@@ -278,29 +278,10 @@ async function run() {
         //     }
         // });
 
+
         app.post('/tasks', async (req, res) => {
             try {
-                //Get all the task data from the project collection and update the task data in the column field
-                // const allTasks = projectCollection.aggregate([
-                //     {
-                //         $match: { projectId: req.body.projectId }
-                //     },
-                //     {
-                //         $unwind: '$column'
-                //     },
-                //     {
-                //         $unwind: '$column.tasks'
-                //     },
-                //     {
-                //         $project: {
-                //             _id: 0,
-                //             projectId: 1,
-                //             task: "$column.tasks",
-                //         }
-                //     }
-                // ]);
-                // console.log(allTasks);
-                //get specific projects data using projectId
+                
                 const project = await projectCollection.findOne({ projectId: req.body.projectId });
                 //console.log(project);
                 if (!project) {
@@ -311,9 +292,40 @@ async function run() {
                 if (!column) {
                     return res.status(404).send({ message: 'Column not found' });
                 }
+
+                //Get last task id from the project collection
+                const allTasks = await projectCollection.aggregate([
+                    {$match: { projectId: req.body.projectId }},
+                    {$unwind: '$column'},
+                    {$unwind: '$column.tasks'},
+                    {
+                        $project: {
+                            _id: 0,
+                            projectId: 1,
+                            task: "$column.tasks",
+                        }
+                    },
+                    { $sort: { "task.created_at": 1 } } // Sort by `created_at` field (ascending order)
+
+                ]).toArray();
+
+                // Get the last task
+                const lastTask = allTasks[allTasks.length - 1];
+                let lastTaskIdNumber = 99; // Default if no tasks exist
+                if (lastTask.task && lastTask.task.taskId) {
+                    const parts = lastTask.task.taskId.split('-');
+                    if (parts.length === 2 && !isNaN(parts[1])) {
+                        lastTaskIdNumber = parseInt(parts[1], 10);
+                    }
+                }
+                // Determine the new numeric ID
+                const newTaskIdNumber = lastTaskIdNumber + 1;
+                // Create the new taskId with the "WHO-" prefix
+                const newTaskId = `WHO-${newTaskIdNumber}`;
+
                 const newTask = {
                     id: new ObjectId().toHexString(),
-                    taskId: generateUniqueId(),
+                    taskId: newTaskId,
                     title: req.body.title,
                     description: req.body.description,
                     priority: req.body.priority,
@@ -337,7 +349,7 @@ async function run() {
             } catch (error) {
                 console.log('not task save');
                 console.error(error);
-                res.status(500).send({ message: 'Internal Server Error' });
+                res.status(500).send({ message: 'Internal Server Error for adding task' });
             }
                 
 
