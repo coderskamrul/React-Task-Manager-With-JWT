@@ -53,6 +53,34 @@ function DotedButton( {options = [], top, right, cardId, projectId } ) {
             console.log(err);
           });
         break;
+      case 'addManualTimeColumn':
+        console.log('addManualTimeColumn');
+        break;
+        case 'editColumnName':
+        console.log('editColumnName');
+        break;
+        case 'addDueTimeColumn':
+        console.log('addDueTimeColumn');
+        break;
+        case 'deleteColumn':
+        console.log('deleteColumn');
+        axiosSecure.delete(`/column/delete/${projectId}/${cardId}`)
+          .then((res) => {
+            reFetchProject();
+            if (res.statusText === "OK") {
+              Swal.fire({
+                 position: "top-end",
+                 icon: "success",
+                 title: "Column is delete successfully",
+                 showConfirmButton: false,
+                 timer: 1500
+                });
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        break;
       default:
         console.log('Unknown action');
     }

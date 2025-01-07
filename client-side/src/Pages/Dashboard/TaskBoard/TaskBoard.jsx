@@ -1,206 +1,3 @@
-//........................................................................
-// import React, { useContext, useEffect, useState } from "react";
-// import AddTaskForm from "./AddTaskForm";
-// import { Link, useParams } from "react-router-dom";
-// import { AuthContext } from "../../../Provider/AuthProvider";
-// import useTaskManage from "../../../Hooks/useTaskManage";
-// import useProjects from "../../../Hooks/useProjects";
-// import Swal from "sweetalert2";
-// import useAxiosSecure from "../../../Hooks/useAxiosSecure";
-// import TaskCard from "./TaskCard";
-
-// const TaskBoard = () => {
-//   const { id } = useParams();
-//   const [projects, isProjectLoading] = useProjects();
-//   const [tasks, isTaskLoading, reFetchTask] = useTaskManage();
-//   const { setCurrentProject } = useContext(AuthContext);
-//   const axiosSecure = useAxiosSecure();
-//   const getTask = !isTaskLoading ? tasks : null;
-//   const getProjects = !isProjectLoading
-//     ? projects.find((project) => project.projectId === id)
-//     : "";
-//   //TODO: Refactor columns to be dynamic
-//   const [columns, setColumns] = useState(getProjects?.column || []);
-
-//   useEffect(() => {
-//     if (getProjects) {
-//       setColumns(getProjects.column || []);
-//     }
-//   }, [getProjects]);
-//   // console.log('id - ', id);
-//   // Set the current project context when projects are loaded
-//   useEffect(() => {
-//     if (getProjects) {
-//       setCurrentProject(getProjects);
-//       // console.log(getProjects);
-//       // setColumns(getProjects.column);
-//     }
-//   }, [getProjects, setCurrentProject]);
-
-//   // Update columns dynamically based on tasks
-//   useEffect(() => {
-//     if (getTask && Array.isArray(getTask)) {
-//       // Map tasks to the appropriate column based on progress
-//       const updatedColumns = columns && columns.map((column) => ({
-//         ...column,
-//         tasks: getTask
-//           .filter((task) => task.progress === column.id && task.projectId === id)
-//           .map((task) => ({
-//             id: task._id,
-//             taskId: task.taskId,
-//             title: task.title,
-//             priority: task.priority,
-//             description: task.description,
-//             date: task.date,
-//             tags: task.tags,
-//             assignees: task.assignedUsers,
-//             progress: task.progress,
-//           })),
-//       }));
-
-//       // Update state only if columns have changed
-//       setColumns((prevColumns) => {
-//         const areColumnsSame = JSON.stringify(prevColumns) === JSON.stringify(updatedColumns);
-//         return areColumnsSame ? prevColumns : updatedColumns;
-//       });
-//     }
-//     // console.log(getTask);
-
-//   }, [getTask, columns, id]); // Dependency array excludes "columns" to avoid infinite loop
-
-
-//   const handleAddColumn = async () => {
-
-//     const { value: title } = await Swal.fire({
-//       title: "Input title column",
-//       input: "text",
-//       inputLabel: "Your title column",
-//       inputPlaceholder: "Enter your title column"
-//     });
-//     if (title) {
-
-//       // Swal.fire(`Entered title: ${title}`);
-
-//       // title id should be title in lowercase and replace space with '-'
-//       const titleId = title.toLowerCase().replace(/\s+/g, "_");
-//       const newColumn = {
-//         id: titleId,
-//         title,
-//         tasks: []
-//       };
-
-//       axiosSecure.put(`/projects/${id}`, newColumn)
-//         .then(res => {
-//           console.log(res.data);
-//           if (res.data.result.acknowledged) {
-//             Swal.fire({
-//               position: "top-end",
-//               icon: "success",
-//               title: "Column is created successfully",
-//               showConfirmButton: false,
-//               timer: 1500
-//             });
-//           }
-//         })
-//         .catch(err => {
-//           console.error(err);
-//         }
-//         );
-
-
-
-
-//     }
-
-//   };
-
-
-
-//   return (
-//     <>
-//       <div className="w-full">
-
-//         <div className="flex items-center justify-between">
-//           <h2 className="text-2xl font-semibold capitalize">Tasks List</h2>
-//           <button
-//             type="button"
-//             className="flex flex-row-reverse items-center gap-1 bg-blue-600 text-white rounded-md px-3 py-2"
-//           >
-//             <span className="" onClick={handleAddColumn}>Create Column</span>
-//             {/* <button >Create Task</button> */}
-
-//             <svg
-//               stroke="currentColor"
-//               fill="currentColor"
-//               strokeWidth="0"
-//               viewBox="0 0 512 512"
-//               className="text-lg"
-//               height="1em"
-//               width="1em"
-//               xmlns="http://www.w3.org/2000/svg"
-//             >
-//               <path d="M416 277.333H277.333V416h-42.666V277.333H96v-42.666h138.667V96h42.666v138.667H416v42.666z" />
-//             </svg>
-//           </button>
-//           <button
-//             type="button"
-//             className="flex flex-row-reverse items-center gap-1 bg-blue-600 text-white rounded-md px-3 py-2"
-//           >
-//             <span className="" onClick={() => document.getElementById('my_modal_2').showModal()}>Create Task</span>
-//             {/* <button >Create Task</button> */}
-
-//             <svg
-//               stroke="currentColor"
-//               fill="currentColor"
-//               strokeWidth="0"
-//               viewBox="0 0 512 512"
-//               className="text-lg"
-//               height="1em"
-//               width="1em"
-//               xmlns="http://www.w3.org/2000/svg"
-//             >
-//               <path d="M416 277.333H277.333V416h-42.666V277.333H96v-42.666h138.667V96h42.666v138.667H416v42.666z" />
-//             </svg>
-//           </button>
-//         </div>
-//         <div className="w-full h-96 sm:px-0">
-//           <div className="w-full mt-2">
-//             <div className="py-1">
-//               <div className="overflow-x-auto">
-//                 <div className="flex gap-4 min-w-max">
-//                   {columns && columns.map((column) => (
-//                     // Column element starts here
-//                     <div
-//                       key={column.id}
-//                       className="flex-none w-[300px] bg-gray-100 p-4 rounded-lg shadow-md h-[500px]"
-//                     >
-//                       <h2 className="text-lg font-semibold text-center mb-4 sticky top-0 bg-gray-100 py-2">
-//                         {column.title}
-//                       </h2>
-//                       <div className="h-96 overflow-y-scroll scrollbar-thick scrollbar-thumb-blue-500 scrollbar-track-blue-100">
-//                         {/* {console.log(column.tasks)} */}
-//                         {column && column.tasks.map((task) => (
-//                           <TaskCard key={task.id} task={task} projectId={id} />
-//                         ))}
-//                       </div>
-//                     </div>
-//                     // Column element End here
-//                   ))}
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//       <AddTaskForm />
-//     </>
-//   );
-// };
-
-// export default TaskBoard;
-
-//........................................................................ New Draggable Task ........................................................................
-
 import React, { useContext, useEffect, useState, useRef } from "react";
 import AddTaskForm from "./AddTaskForm";
 import { Link, useParams } from "react-router-dom";
@@ -209,67 +6,9 @@ import useTaskManage from "../../../Hooks/useTaskManage";
 import useProjects from "../../../Hooks/useProjects";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
-import TaskCard from "./TaskCard";
+import TaskColumn from "./TaskColumn";
+import Skeleton from "../../../Components/Skeleton";
 
-const initialBoard = {
-  columns: [
-    {
-      id: 'backlog',
-      title: 'Backlog',
-      tasks: [
-        { id: '1', title: 'Company website redesign.', priority: 'Low', comments: 1, attachments: 2, assignee: { avatar: '/placeholder.svg', name: 'John Doe' } },
-        { id: '2', title: 'Mobile app login process prototype.', priority: 'High', comments: 10, attachments: 4, assignee: { avatar: '/placeholder.svg', name: 'Jane Smith' } },
-      ],
-    },
-    {
-      id: 'in-progress',
-      title: 'In Progress',
-      tasks: [
-        { id: '3', title: 'User research for new feature', priority: 'Medium', comments: 5, attachments: 1, assignee: { avatar: '/placeholder.svg', name: 'Alice Johnson' } },
-      ],
-    },
-    {
-      id: 'in-review',
-      title: 'In Review',
-      tasks: [
-        { id: '4', title: 'Dashboard layout redesign.', priority: 'High', comments: 13, attachments: 2, assignee: { avatar: '/placeholder.svg', name: 'Bob Wilson' } },
-        { id: '5', title: 'Social media posts', priority: 'Low', comments: 0, attachments: 0, assignee: { avatar: '/placeholder.svg', name: 'Charlie Brown' } },
-      ],
-    },
-    {
-      id: 'completed',
-      title: 'Completed',
-      tasks: [
-        { id: '6', title: 'Navigation designs', priority: 'Medium', comments: 0, attachments: 0, assignee: { avatar: '/placeholder.svg', name: 'Diana Prince' } },
-        { id: '7', title: 'Create style guide based on previous feedback', priority: 'High', comments: 5, attachments: 2, assignee: { avatar: '/placeholder.svg', name: 'Eve Adams' } },
-      ],
-    },
-  ],
-};
-
-const Column = ({ column, tasks, onDragStart, onDragOver, onDrop, id }) => {
-  return (
-    <div
-      className="h-[36rem] flex-none w-[300px] rounded-lg bg-blue-100"
-      onDragOver={onDragOver}
-      onDrop={(e) => onDrop(e, column.id)}
-    >
-      <div
-        className="p-4 font-medium border-b bg-white rounded-t-lg cursor-move"
-        draggable
-        onDragStart={(e) => onDragStart(e, column.id, 'column')}
-      >
-        <h2>{column.title}</h2>
-      </div>
-      <div className="overflow-y-scroll scrollbar-thick scrollbar-thumb-blue-500 scrollbar-track-blue-100">
-        {tasks.map((task) => (
-          // <TaskNewCard key={task.id} task={task} columnTitle={column.title} onDragStart={onDragStart} />
-          <TaskCard key={task.id} task={task} projectId={id} columnTitle={column.title} onDragStart={onDragStart} />
-        ))}
-      </div>
-    </div>
-  );
-};
 
 const AddTaskDialog = ({ isOpen, onClose, onAddTask }) => {
   const [title, setTitle] = useState('');
@@ -365,8 +104,6 @@ const TaskBoard = () => {
   //TODO: Refactor columns to be dynamic
   const [columns, setColumns] = useState(getProjects?.column || []);
   const [board, setBoard] = useState({ columns: columns || [] });
-  //console.log(board);
-  //console.log(columns);
 
   useEffect(() => {
     if (getProjects) {
@@ -382,7 +119,6 @@ const TaskBoard = () => {
   }, [getProjects, setCurrentProject]);
 
   // Update columns dynamically based on tasks
-  //console.log(getProjects.column);
   const mergeTasks = (columns) => {
     return columns.reduce((acc, column) => {
       if (column.tasks && column.tasks.length > 0) {
@@ -393,9 +129,6 @@ const TaskBoard = () => {
   };
   useEffect(() => {
     if (getProjects?.column) {
-      // Map tasks to the appropriate column based on progress
-      // console.log(mergeTasks(getProjects.column));
-      // console.log(getTask);
       const updatedColumns = getProjects.column && getProjects.column.map((column) => ({
         ...column,
         tasks: mergeTasks(getProjects.column)
@@ -427,13 +160,11 @@ const TaskBoard = () => {
         return areBoardsSame ? prevBoard : { ...prevBoard, columns: updatedColumns };
       });
     }
-    // console.log(getTask);
 
   }, [columns, id]); // Dependency array excludes "columns" to avoid infinite loop
 
 
   const handleAddColumn = async () => {
-
     const { value: title } = await Swal.fire({
       title: "Input title column",
       input: "text",
@@ -441,9 +172,6 @@ const TaskBoard = () => {
       inputPlaceholder: "Enter your title column"
     });
     if (title) {
-
-      // Swal.fire(`Entered title: ${title}`);
-
       // title id should be title in lowercase and replace space with '-'
       const titleId = title.toLowerCase().replace(/\s+/g, "_");
       const newColumn = {
@@ -470,12 +198,7 @@ const TaskBoard = () => {
           console.error(err);
         }
         );
-
-
-
-
     }
-
   };
 
 
@@ -494,7 +217,7 @@ const TaskBoard = () => {
   const handleDrop = (e, targetColumnId) => {
     e.preventDefault();
     const draggedItemId = e.dataTransfer.getData('text');
-  
+
     const updateColumnsInBackend = async (updatedColumns) => {
       try {
         console.log('Updating columns in backend');
@@ -513,12 +236,12 @@ const TaskBoard = () => {
         console.log('API call error:', err);
       }
     };
-  
+
     if (draggedType === 'task') {
       const updatedBoard = { ...board };
       let task;
       let sourceColumnId;
-  
+
       // Find and remove the task from its original column
       for (const column of updatedBoard.columns) {
         const taskIndex = column.tasks.findIndex(t => t.id === draggedItemId);
@@ -529,7 +252,7 @@ const TaskBoard = () => {
           break;
         }
       }
-  
+
       if (task) {
         const targetColumn = updatedBoard.columns.find(c => c.id === targetColumnId);
         if (targetColumn) {
@@ -541,29 +264,29 @@ const TaskBoard = () => {
             // If dropping on a different column, add to the end
             task.columnTitle = targetColumn.title;
             targetColumn.tasks.push(task);
-  
+
             // Call the API endpoint only when the task is moved to a different column
             updateColumnsInBackend(updatedBoard.columns);
           }
         }
       }
-  
+
       setBoard(updatedBoard);
     } else if (draggedType === 'column') {
       const updatedColumns = [...board.columns];
       const draggedColumnIndex = updatedColumns.findIndex(c => c.id === draggedItemId);
       const targetColumnIndex = updatedColumns.findIndex(c => c.id === targetColumnId);
-  
+
       if (draggedColumnIndex !== -1 && targetColumnIndex !== -1 && draggedColumnIndex !== targetColumnIndex) {
         const [draggedColumn] = updatedColumns.splice(draggedColumnIndex, 1);
         updatedColumns.splice(targetColumnIndex, 0, draggedColumn);
         setBoard({ ...board, columns: updatedColumns });
-  
+
         // Call the API endpoint when a column is moved
         updateColumnsInBackend(updatedColumns);
       }
     }
-  
+
     setDraggedItem(null);
     setDraggedType(null);
   };
@@ -597,67 +320,74 @@ const TaskBoard = () => {
       <div className="w-full sm:px-0">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold capitalize">Tasks List</h2>
-          <button
-            type="button"
-            className="flex flex-row-reverse items-center gap-1 bg-blue-600 text-white rounded-md px-3 py-2"
-          >
-            <span className="" onClick={handleAddColumn}>Create Column</span>
-            {/* <button >Create Task</button> */}
-
-            <svg
-              stroke="currentColor"
-              fill="currentColor"
-              strokeWidth="0"
-              viewBox="0 0 512 512"
-              className="text-lg"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              className="flex flex-row-reverse items-center gap-1 bg-blue-600 text-white rounded-md px-3 py-2"
             >
-              <path d="M416 277.333H277.333V416h-42.666V277.333H96v-42.666h138.667V96h42.666v138.667H416v42.666z" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            className="flex flex-row-reverse items-center gap-1 bg-blue-600 text-white rounded-md px-3 py-2"
-          >
-            <span className="" onClick={() => document.getElementById('my_modal_2').showModal()}>Create Task</span>
-            {/* <button >Create Task</button> */}
+              <span className="" onClick={handleAddColumn}>Create Column</span>
+              {/* <button >Create Task</button> */}
 
-            <svg
-              stroke="currentColor"
-              fill="currentColor"
-              strokeWidth="0"
-              viewBox="0 0 512 512"
-              className="text-lg"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
+              <svg
+                stroke="currentColor"
+                fill="currentColor"
+                strokeWidth="0"
+                viewBox="0 0 512 512"
+                className="text-lg"
+                height="1em"
+                width="1em"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M416 277.333H277.333V416h-42.666V277.333H96v-42.666h138.667V96h42.666v138.667H416v42.666z" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="flex flex-row-reverse items-center gap-1 bg-blue-600 text-white rounded-md px-3 py-2"
             >
-              <path d="M416 277.333H277.333V416h-42.666V277.333H96v-42.666h138.667V96h42.666v138.667H416v42.666z" />
-            </svg>
-          </button>
-        </div>
+              <span className="" onClick={() => document.getElementById('my_modal_2').showModal()}>Create Task</span>
+              {/* <button >Create Task</button> */}
 
-        <div className="w-full mt-2">
-          <div className='py-1' >
-            <div className='overflow-x-auto h-screen' >
-              <div className="flex justify-center gap-4 min-w-max">
-                {board.columns.map((column) => (
-                  <Column
-                    key={column.id}
-                    column={column}
-                    tasks={column.tasks}
-                    onDragStart={handleDragStart}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                    id={id}
-                  />
-                ))}
-              </div>
-            </div>
+              <svg
+                stroke="currentColor"
+                fill="currentColor"
+                strokeWidth="0"
+                viewBox="0 0 512 512"
+                className="text-lg"
+                height="1em"
+                width="1em"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M416 277.333H277.333V416h-42.666V277.333H96v-42.666h138.667V96h42.666v138.667H416v42.666z" />
+              </svg>
+            </button>
           </div>
         </div>
+        {
+          isProjectLoading ? <Skeleton />
+            :
+            <div className="w-full mt-2">
+              <div className='py-1' >
+                <div className='overflow-x-auto h-screen' >
+                  <div className="flex justify-center gap-4 min-w-max">
+                    {board.columns && board.columns.map((column) => (
+                      <TaskColumn
+                        key={column.id}
+                        column={column}
+                        tasks={column.tasks}
+                        onDragStart={handleDragStart}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                        id={id}
+                      />
+                    ))
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+        }
+
         <AddTaskDialog
           isOpen={isAddTaskOpen}
           onClose={() => setIsAddTaskOpen(false)}

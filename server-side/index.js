@@ -448,6 +448,29 @@ async function run() {
                 res.status(500).send({ error: "Failed to delete task" });
             }
         });
+        //Delete specific Column route
+        app.delete('/column/delete/:projectId/:columnId', async (req, res) => {
+            try {
+                const { projectId, columnId } = req.params;
+                console.log(projectId, columnId, 'lk');
+                // Delete the column with the specified columnId
+                const result = await projectCollection.updateOne(
+                    { projectId: projectId }, // Match project by projectId
+                    {
+                        $pull: { column: { id: columnId } } // Pull the column with the matching id
+                    }
+                );
+        
+                if (result.modifiedCount > 0) {
+                    res.status(200).send({ message: "Column deleted successfully" });
+                } else {
+                    res.status(404).send({ message: "Column not found or already deleted" });
+                }
+            } catch (error) {
+                console.error("Error deleting column:", error);
+                res.status(500).send({ error: "Failed to delete column" });
+            }
+        });
         
         //Get the all tasks data from database
         app.get('/dashboard/projects/tasks', async (req, res) => {
