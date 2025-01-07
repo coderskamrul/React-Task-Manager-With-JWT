@@ -452,7 +452,6 @@ async function run() {
         app.delete('/column/delete/:projectId/:columnId', async (req, res) => {
             try {
                 const { projectId, columnId } = req.params;
-                console.log(projectId, columnId, 'lk');
                 // Delete the column with the specified columnId
                 const result = await projectCollection.updateOne(
                     { projectId: projectId }, // Match project by projectId
@@ -553,50 +552,6 @@ async function run() {
             }
         });
 
-        // GET Tasks route to fetch all user data
-        // app.get('/upload-image', async (req, res) => {
-        //     try {
-        //         const result = await taskCollection.find({}).toArray(); // Fetch all tasks
-        //         res.status(200).send({ message: 'Get all task successfully', result });
-        //         // res.send(users);
-        //     } catch (error) {
-        //         console.error("Error fetching users", error);
-        //         res.status(500).send({ error: "Failed to fetch users" });
-        //     }
-        // });
-
-        // app.get('/update/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: new ObjectId(id) };
-        //     const result = await taskCollection.findOne(query);
-        //     res.send(result);
-
-        // })
-
-        // app.put('/update/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const usersUp = req.body;
-        //     const query = { _id: new ObjectId(id) };
-        //     const options = { upsert: true };
-        //     const updatedUser = {
-        //         $set: {
-        //             name: usersUp.name,
-        //             email: usersUp.email
-        //         },
-        //     };
-        //     const result = await taskCollection.updateOne(query, updatedUser, options);
-
-        //     res.send(result);
-
-        // })
-
-        // app.delete('/users/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: new ObjectId(id) };
-        //     const result = await taskCollection.deleteOne(query);
-        //     res.send(result);
-
-        // })
         // Any other routes or database operations can be added here
     } catch (error) {
         console.error("Error occurred during database operations", error);

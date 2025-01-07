@@ -1,31 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react'
 import Project from './Project'
 import AddProjectForm from './AddProjectForm'
-import axios from 'axios';
-import { AuthContext } from '../../../Provider/AuthProvider';
 import useProjects from '../../../Hooks/useProjects';
+import Skeleton from '../../../Components/Skeleton';
 
 const Projects = () => {
 
-    // const {projects} = useContext(AuthContext);
-    const [ projects, isProjectLoading ] = useProjects();
-    // console.log(projects);
-    // useEffect(() => {
-    //     axios.get('http://localhost:5000/projects', {withCredentials: true})
-    //         .then(res => {
-    //             console.log(res.data); 
-    //             setProjects(res.data.result);
-    //             setCurrentProject(res.data.result);
-    //         })
-    //         .catch(err => {
-    //             console.error(err);
-    //         }
-    //     );
-    // },[])
-    // console.log(projects);
-    if (isProjectLoading) {
-        return <div>Loading...</div>
-    }
+    const [projects, isProjectLoading] = useProjects();
     return (
         <>
             <div className="px-4">
@@ -55,6 +36,9 @@ const Projects = () => {
                         </button>
                     </div>
                 </div>
+                {
+                    isProjectLoading && <Skeleton />
+                }
                 <div className="grid sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-3">
                     {/* Project Component */}
                     {
