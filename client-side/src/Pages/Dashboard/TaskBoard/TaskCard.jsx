@@ -44,59 +44,60 @@ const TaskCard = ({ task, projectId, columnTitle, onDragStart }) => {
   ];
 
   return (
-    <div
-      draggable
-      onDragStart={(e) => onDragStart(e, task.id, 'task')}
-      className="rounded-lg shadow-sm p-2 cursor-move mb-2"
-    >
-      <div className="bg-white p-4 rounded-lg shadow-md">
-        <div className="flex relative justify-normal items-center mb-2">
-          <span
-            className="text-gray-500 font-bold border cursor-pointer rounded-md text-[10px] border-gray-300 mr-4 px-2 py-1 text-xs"
-            onClick={() => {
-              navigator.clipboard.writeText(task.taskId) // Copy to clipboard
-                .then(() => {
-                  alert("ID is copied"); // Show alert
+    <>
+      <div
+        draggable
+        onDragStart={(e) => onDragStart(e, task.id, 'task')}
+        className="rounded-lg shadow-sm p-2 cursor-move mb-2"
+      >
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <div className="flex relative justify-normal items-center mb-2">
+            <span
+              className="text-gray-500 font-bold border cursor-pointer rounded-md text-[10px] border-gray-300 mr-4 px-2 py-1 text-xs"
+              onClick={() => {
+                navigator.clipboard.writeText(task.taskId) // Copy to clipboard
+                  .then(() => {
+                    alert("ID is copied"); // Show alert
+                  })
+                  .catch((err) => {
+                    console.error("Failed to copy text to clipboard: ", err); // Handle error
+                  });
+              }}
+            >
+              {task.taskId}
+            </span>
+
+            {/* <span className="text-gray-500 text-xs">{task.date}</span> */}
+            <select
+              id="selectProgress"
+              {...register("progress")}
+              className="max-w-fit border border-gray-300 text-[10px] rounded-lg h-[23px] px-1 text-sm"
+              defaultValue={task.progress}
+              onChange={(e) => handleProgressChange(e.target.value)}
+            >
+              {
+                getColumn && getColumn.map((column) => {
+                  return (
+                    <option key={column.id} value={column.id}>
+                      {column.title}
+                    </option>
+                  );
                 })
-                .catch((err) => {
-                  console.error("Failed to copy text to clipboard: ", err); // Handle error
-                });
-            }}
-          >
-            {task.taskId}
-          </span>
+              }
+            </select>
 
-          {/* <span className="text-gray-500 text-xs">{task.date}</span> */}
-          <select
-            id="selectProgress"
-            {...register("progress")}
-            className="max-w-fit border border-gray-300 text-[10px] rounded-lg h-[23px] px-1 text-sm"
-            defaultValue={task.progress}
-            onChange={(e) => handleProgressChange(e.target.value)}
+            <DotedButton options={DottedButtonOptions} top={0} right={0} cardId={task.taskId} projectId={projectId} />
+          </div>
+          <Link
+            to={`/dashboard/projects/tasks/${projectId}?taskid=${task.taskId}`} // Add taskid to URL
+            onClick={() => setPopupVisible(true)} // Open popup when the title is clicked
           >
+            <h3 className="font-semibold text-gray-800 mb-1">{task.title}</h3>
+          </Link>
+          <p className="text-gray-600 text-sm mb-3">{task.description}</p>
+          <div className="flex space-x-1 mb-2">
             {
-              getColumn && getColumn.map((column) => {
-                return (
-                  <option key={column.id} value={column.id}>
-                    {column.title}
-                  </option>
-                );
-              })
-            }
-          </select>
-
-          <DotedButton options={DottedButtonOptions} top={0} right={0} cardId={task.taskId} projectId={projectId} />
-        </div>
-        <Link
-          to={`/dashboard/projects/tasks/${projectId}?taskid=${task.taskId}`} // Add taskid to URL
-          onClick={() => setPopupVisible(true)} // Open popup when the title is clicked
-        >
-          <h3 className="font-semibold text-gray-800 mb-1">{task.title}</h3>
-        </Link>
-        <p className="text-gray-600 text-sm mb-3">{task.description}</p>
-        <div className="flex space-x-1 mb-2">
-          {
-          // task.assignees && task.assignees.map((assignee, index) => (
+              // task.assignees && task.assignees.map((assignee, index) => (
               // <span
               //   key={index}
               //   className="bg-blue-500 text-white rounded-full h-6 w-6 flex items-center capitalize justify-center text-xs"
@@ -107,11 +108,11 @@ const TaskCard = ({ task, projectId, columnTitle, onDragStart }) => {
               <div className="flex -space-x-2">
                 {task.assignedUsers && task.assignedUsers.slice(0, 1).map(assignee => (
                   <span
-                  key={assignee[0]}
-                className="bg-blue-500 text-white rounded-full h-6 w-6 flex items-center capitalize justify-center text-xs"
-              >
-                {assignee[0]}
-              </span>
+                    key={assignee[0]}
+                    className="bg-blue-500 text-white rounded-full h-6 w-6 flex items-center capitalize justify-center text-xs"
+                  >
+                    {assignee[0]}
+                  </span>
                 ))}
                 {task.assignedUsers.length >= 1 && (
                   <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
@@ -121,18 +122,19 @@ const TaskCard = ({ task, projectId, columnTitle, onDragStart }) => {
               </div>
 
               //eeee
-            // ))
+              // ))
             }
+          </div>
+          <div className="text-sm text-blue-600 bg-blue-100 rounded-full px-2 py-1 inline-block mb-3">
+            {task.tags[0]}
+          </div>
+          <button className="text-blue-500 text-sm font-medium mt-2">Add Subtask</button>
         </div>
-        <div className="text-sm text-blue-600 bg-blue-100 rounded-full px-2 py-1 inline-block mb-3">
-          {task.tags[0]}
-        </div>
-        <button className="text-blue-500 text-sm font-medium mt-2">Add Subtask</button>
-      </div>
 
+      </div>
       {/* Render the popup if it's visible */}
       {popupVisible && <TaskPopup task={task} onClose={closePopup} />}
-    </div>
+    </>
   );
 };
 

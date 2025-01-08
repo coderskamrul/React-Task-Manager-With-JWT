@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 
+//Initail Board data
 const initialBoard = {
   columns: [
     {

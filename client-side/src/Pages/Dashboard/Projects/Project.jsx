@@ -12,7 +12,7 @@ const Project = (project) => {
     ];
     return (
         <>
-            <div className="relative bg-white p-4 rounded-lg shadow-lg my-4">
+            <div className="flex justify-end relative bg-white p-4 rounded-lg shadow-lg my-4">
                 <DotedButton options={DottedButtonOptions} top={3} right={3} cardId={projectId}/>
                 <div className="mb-6 rounded-lg bg-white p-6">
                     <div className="flex items-center justify-between">
