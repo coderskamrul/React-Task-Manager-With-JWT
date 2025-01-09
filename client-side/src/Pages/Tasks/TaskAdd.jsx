@@ -9,6 +9,7 @@ const TaskAdd = () => {
         setFile(e.target.files[0]);
     };
 
+    //Handle form submit 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
