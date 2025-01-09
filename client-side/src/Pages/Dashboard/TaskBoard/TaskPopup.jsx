@@ -442,65 +442,6 @@ const TaskPopup = ({ task, onClose }) => {
                     )}
                 </div>
 
-                {/* <div className="p-4">
-                    <h2 className="text-lg font-bold mb-2">{task.title}</h2>
-                    <p className="text-gray-600 text-sm mb-4">{task.description}</p>
-                    <p className="text-gray-600 text-sm mb-4">{task.description}</p>
-                    <p className="text-gray-600 text-sm mb-4">{task.description}</p>
-                    <p className="text-gray-600 text-sm mb-4">{task.description}</p>
-                    <p className="text-gray-600 text-sm mb-4">{task.description}</p>
-                    <p className="text-gray-600 text-sm mb-4">{task.description}</p>
-                    <p className="text-gray-600 text-sm mb-4">{task.description}</p>
-                    <p className="text-gray-600 text-sm mb-4">{task.description}</p>
-                    <p className="text-gray-600 text-sm mb-4">{task.description}</p>
-
-                    <div className="mb-4">
-                        <h3 className="text-sm font-bold text-gray-800 mb-1">Priority</h3>
-                        <span className="text-red-600 text-xs font-semibold">
-                            {task.priority}
-                        </span>
-                    </div>
-
-                    <div className="mb-4">
-                        <h3 className="text-sm font-bold text-gray-800 mb-1">Assigned To</h3>
-                        <div className="flex space-x-2">
-                            {task.assignees &&
-                                task.assignees.map((assignee, index) => (
-                                    <span
-                                        key={index}
-                                        className="bg-blue-500 text-white rounded-full h-8 w-8 flex items-center justify-center text-xs"
-                                    >
-                                        {assignee}
-                                    </span>
-                                ))}
-                        </div>
-                    </div>
-
-                    <div className="mb-4">
-                        <h3 className="text-sm font-bold text-gray-800 mb-1">Tags</h3>
-                        {task.tags &&
-                            task.tags.map((tag, index) => (
-                                <span
-                                    key={index}
-                                    className="text-blue-600 bg-blue-100 rounded-full px-2 py-1 text-xs mr-2"
-                                >
-                                    {tag}
-                                </span>
-                            ))}
-                    </div>
-
-                    <div className="mb-4">
-                        <h3 className="text-sm font-bold text-gray-800 mb-1">Created Date</h3>
-                        <span className="text-gray-600 text-sm">{task.date}</span>
-                    </div>
-
-                    <div className="mb-4">
-                        <h3 className="text-sm font-bold text-gray-800 mb-1">Subtasks</h3>
-                        <button className="text-blue-500 text-sm font-medium">
-                            Add Subtask
-                        </button>
-                    </div>
-                </div> */}
 
 
             </div>
