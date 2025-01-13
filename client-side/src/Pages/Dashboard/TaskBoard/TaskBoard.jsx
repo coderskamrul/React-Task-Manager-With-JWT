@@ -315,11 +315,24 @@ const TaskBoard = () => {
     setIsAddTaskOpen(false);
   };
 
+  //@TODO Searching is Not Working Fixed Later
+  const handleSearch = (e) => {
+    const searchValue = e.target.value.toLowerCase();
+    console.log(searchValue);
+    const updatedColumns = getProjects.column.map((column) => ({
+      ...column,
+      tasks: column.tasks.filter((task) => task.title.toLowerCase().includes(searchValue)),
+    }));
+    setColumns([]);
+    setBoard({ columns: [] });
+
+  }
   return (
     <>
       <div className="w-full sm:px-0">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold capitalize">Tasks List</h2>
+          <input onChange={handleSearch} type="text" name="search" id="" />
           <div className="flex items-center gap-4">
             <button
               type="button"
@@ -363,6 +376,7 @@ const TaskBoard = () => {
             </button>
           </div>
         </div>
+        {console.log(board.columns)}
         {
           isProjectLoading ? <Skeleton />
             :
