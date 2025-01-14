@@ -104,12 +104,14 @@ const TaskBoard = () => {
   //TODO: Refactor columns to be dynamic
   const [columns, setColumns] = useState(getProjects?.column || []);
   const [board, setBoard] = useState({ columns: columns || [] });
+  const [allTasks, setAllTasks] = useState([]);
 
   useEffect(() => {
     if (getProjects) {
       const projectColumns = getProjects.column || [];
       setColumns(projectColumns);
       setBoard({ columns: projectColumns });
+      setAllTasks({ columns: projectColumns })
     }
   }, [getProjects]);
   useEffect(() => {
@@ -321,18 +323,33 @@ const TaskBoard = () => {
     console.log(searchValue);
     const updatedColumns = getProjects.column.map((column) => ({
       ...column,
-      tasks: column.tasks.filter((task) => task.title.toLowerCase().includes(searchValue)),
+      tasks: column.tasks.filter((task) =>
+        task.title.toLowerCase().includes(searchValue) ||
+        task.taskId.toLowerCase().includes(searchValue)
+      ),
     }));
-    setColumns([]);
-    setBoard({ columns: [] });
+    console.log(updatedColumns);
+    // setColumns([]);
+    // setBoard({ columns: [] });
+    setAllTasks({ columns: updatedColumns });
 
   }
+  console.log(allTasks);
   return (
     <>
       <div className="w-full sm:px-0">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold capitalize">Tasks List</h2>
-          <input onChange={handleSearch} type="text" name="search" id="" />
+          {/* <input  type="text" name="search" id="" /> */}
+          <div className="bg-white rounded flex items-center w-full max-w-xl mr-4 p-2 shadow-sm border border-gray-200">
+            <button className="outline-none focus:outline-none">
+              <svg className="w-5 text-gray-600 h-5 cursor-pointer" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </button>
+            <input onChange={handleSearch} type="search" name="" id="" placeholder="Search Tasks............" className="w-full pl-3 text-sm text-black outline-none focus:outline-none bg-transparent" />
+          </div>
+
           <div className="flex items-center gap-4">
             <button
               type="button"
@@ -376,7 +393,6 @@ const TaskBoard = () => {
             </button>
           </div>
         </div>
-        {console.log(board.columns)}
         {
           isProjectLoading ? <Skeleton />
             :
@@ -384,7 +400,7 @@ const TaskBoard = () => {
               <div className='py-1' >
                 <div className='overflow-x-auto h-screen' >
                   <div className="flex justify-center gap-4 min-w-max">
-                    {board.columns && board.columns.map((column) => (
+                    {allTasks.columns && allTasks.columns.map((column) => (
                       <TaskColumn
                         key={column.id}
                         column={column}
