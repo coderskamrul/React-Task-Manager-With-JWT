@@ -320,7 +320,6 @@ const TaskBoard = () => {
   //@TODO Searching is Not Working Fixed Later
   const handleSearch = (e) => {
     const searchValue = e.target.value.toLowerCase();
-    console.log(searchValue);
     const updatedColumns = getProjects.column.map((column) => ({
       ...column,
       tasks: column.tasks.filter((task) =>
@@ -328,7 +327,6 @@ const TaskBoard = () => {
         task.taskId.toLowerCase().includes(searchValue)
       ),
     }));
-    console.log(updatedColumns);
     // setColumns([]);
     // setBoard({ columns: [] });
     setAllTasks({ columns: updatedColumns });
@@ -400,7 +398,7 @@ const TaskBoard = () => {
               <div className='py-1' >
                 <div className='overflow-x-auto h-screen' >
                   <div className="flex justify-center gap-4 min-w-max">
-                    {allTasks.columns && allTasks.columns.map((column) => (
+                    {board.columns && board.columns.map((column) => (
                       <TaskColumn
                         key={column.id}
                         column={column}

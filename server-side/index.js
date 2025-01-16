@@ -449,12 +449,7 @@ async function run() {
                 if (result.matchedCount === 0) {
                     return res.status(404).send({ message: 'Project not found' });
                 }
-                // const updatedTask = {
-                //     $set: {
-                //         progress: newColumn.progress
-                //     },
-                // };
-                //const resultTask = await taskCollection.updateOne(query, updatedTask);
+             
                 res.status(200).send({ message: 'Column added successfully moved', result});
             } catch (error) {
                 console.error("Error updating project:", error);
