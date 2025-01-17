@@ -5,15 +5,7 @@ import MultiSelectDropdown from '../../../Components/MultiSelectDropdown';
 import useUsers from '../../../Hooks/useUsers';
 
 const AddProjectForm = () => {
-    // {
-    //     "_id": "ObjectId('proj1')",
-    //     "name": "Project A",
-    //     "description": "This is a sample project",
-    //     "startDate": "2024-01-01",
-    //     "endDate": "2024-06-01",
-    //     "status": "Active",
-    //     "tasks": ["ObjectId('task1')", "ObjectId('task2')"]
-    //   }
+    
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [usersOptions, setUsersOptions] = useState([]);
     const [users] = useUsers();
